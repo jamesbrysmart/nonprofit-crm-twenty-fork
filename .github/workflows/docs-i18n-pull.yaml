@@ -5,8 +5,6 @@ permissions:
   pull-requests: write
 
 on:
-  schedule:
-    - cron: '0 */2 * * *' # Every two hours
   workflow_dispatch:
     inputs:
       force_pull:
@@ -152,4 +150,3 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

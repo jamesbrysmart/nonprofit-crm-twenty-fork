@@ -1,10 +1,10 @@
 import { msg } from '@lingui/core/macro';
+import { STANDARD_OBJECT_IDS } from 'twenty-shared/metadata';
 import {
+  ActorMetadata,
   FieldMetadataType,
   RelationOnDeleteAction,
-  ActorMetadata,
 } from 'twenty-shared/types';
-import { STANDARD_OBJECT_IDS } from 'twenty-shared/metadata';
 
 import { RelationType } from 'src/engine/metadata-modules/field-metadata/interfaces/relation-type.interface';
 import { Relation } from 'src/engine/workspace-manager/workspace-sync-metadata/interfaces/relation.interface';
@@ -14,6 +14,7 @@ import { CustomWorkspaceEntity } from 'src/engine/twenty-orm/custom.workspace-en
 import { WorkspaceDynamicRelation } from 'src/engine/twenty-orm/decorators/workspace-dynamic-relation.decorator';
 import { WorkspaceEntity } from 'src/engine/twenty-orm/decorators/workspace-entity.decorator';
 import { WorkspaceField } from 'src/engine/twenty-orm/decorators/workspace-field.decorator';
+import { WorkspaceIsDeprecated } from 'src/engine/twenty-orm/decorators/workspace-is-deprecated.decorator';
 import { WorkspaceIsFieldUIReadOnly } from 'src/engine/twenty-orm/decorators/workspace-is-field-ui-readonly.decorator';
 import { WorkspaceIsNullable } from 'src/engine/twenty-orm/decorators/workspace-is-nullable.decorator';
 import { WorkspaceIsSystem } from 'src/engine/twenty-orm/decorators/workspace-is-system.decorator';
@@ -49,7 +50,9 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     description: msg`Attachment name`,
     icon: 'IconFileUpload',
   })
-  name: string;
+  @WorkspaceIsFieldUIReadOnly()
+  @WorkspaceIsNullable()
+  name: string | null;
 
   @WorkspaceField({
     standardId: ATTACHMENT_STANDARD_FIELD_IDS.fullPath,
@@ -58,9 +61,10 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     description: msg`Attachment full path`,
     icon: 'IconLink',
   })
-  fullPath: string;
+  @WorkspaceIsFieldUIReadOnly()
+  @WorkspaceIsNullable()
+  fullPath: string | null;
 
-  // Deprecated: Use fileCategory instead
   @WorkspaceField({
     standardId: ATTACHMENT_STANDARD_FIELD_IDS.type,
     type: FieldMetadataType.TEXT,
@@ -68,7 +72,10 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     description: msg`Attachment type (deprecated - use fileCategory)`,
     icon: 'IconList',
   })
-  type: string;
+  @WorkspaceIsFieldUIReadOnly()
+  @WorkspaceIsNullable()
+  @WorkspaceIsDeprecated()
+  type: string | null;
 
   @WorkspaceField({
     standardId: ATTACHMENT_STANDARD_FIELD_IDS.fileCategory,
@@ -128,6 +135,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     ],
     defaultValue: "'OTHER'",
   })
+  @WorkspaceIsFieldUIReadOnly()
   fileCategory: string;
 
   @WorkspaceField({
@@ -140,7 +148,6 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
   @WorkspaceIsFieldUIReadOnly()
   createdBy: ActorMetadata;
 
-  // Deprecated: Use createdBy composite field instead
   @WorkspaceRelation({
     standardId: ATTACHMENT_STANDARD_FIELD_IDS.author,
     type: RelationType.MANY_TO_ONE,
@@ -151,7 +158,9 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'authoredAttachments',
     onDelete: RelationOnDeleteAction.SET_NULL,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
+  @WorkspaceIsDeprecated()
   author: Relation<WorkspaceMemberWorkspaceEntity> | null;
 
   @WorkspaceJoinColumn('author')
@@ -167,6 +176,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.SET_NULL,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   task: Relation<TaskWorkspaceEntity> | null;
 
@@ -183,6 +193,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.SET_NULL,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   note: Relation<NoteWorkspaceEntity> | null;
 
@@ -199,6 +210,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.CASCADE,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   person: Relation<PersonWorkspaceEntity> | null;
 
@@ -215,6 +227,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.CASCADE,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   company: Relation<CompanyWorkspaceEntity> | null;
 
@@ -231,6 +244,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.CASCADE,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   opportunity: Relation<OpportunityWorkspaceEntity> | null;
 
@@ -247,6 +261,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.CASCADE,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   dashboard: Relation<DashboardWorkspaceEntity> | null;
 
@@ -263,12 +278,14 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
     inverseSideFieldKey: 'attachments',
     onDelete: RelationOnDeleteAction.CASCADE,
   })
+  @WorkspaceIsFieldUIReadOnly()
   @WorkspaceIsNullable()
   workflow: Relation<WorkflowWorkspaceEntity> | null;
 
   @WorkspaceJoinColumn('workflow')
   workflowId: string | null;
 
+  // todo: remove this decorator and the custom field
   @WorkspaceDynamicRelation({
     type: RelationType.MANY_TO_ONE,
     argsFactory: (oppositeObjectMetadata) => ({

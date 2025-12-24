@@ -12,6 +12,7 @@ export { ALLOWED_ADDRESS_SUBFIELDS } from './AddressFieldsType';
 export { AppBasePath } from './AppBasePath';
 export { AppPath } from './AppPath';
 export type { Arrayable } from './Arrayable';
+export type { ArraySortDirection } from './ArraySortDirection';
 export type { ActorMetadata } from './composite-types/actor.composite-type';
 export {
   FieldActorSource,
@@ -84,6 +85,7 @@ export {
   FieldMetadataDefaultArray,
 } from './FieldMetadataDefaultValue';
 export type { FieldMetadataMultiItemSettings } from './FieldMetadataMultiItemSettings';
+export { FieldMetadataSettingsOnClickAction } from './FieldMetadataMultiItemSettings';
 export type { TagColor, FieldMetadataOptions } from './FieldMetadataOptions';
 export {
   FieldMetadataDefaultOption,
@@ -109,9 +111,12 @@ export type {
   FilterableAndTSVectorFieldType,
 } from './FilterableFieldType';
 export { FILTERABLE_FIELD_TYPES } from './FilterableFieldType';
+export { FirstDayOfTheWeek } from './FirstDayOfTheWeek';
 export type { FromTo } from './FromToType';
+export { HTTPMethod } from './HttpMethod';
 export type { IsEmptyRecord } from './IsEmptyRecord.type';
 export type { IsExactly } from './IsExactly';
+export { MessageParticipantRole } from './MessageParticipantRole';
 export type { ModifiedProperties } from './ModifiedProperties';
 export type { NonNullableRequired } from './NonNullableRequired';
 export type { Nullable } from './Nullable';
@@ -124,6 +129,7 @@ export type {
   OrderByWithGroupBy,
   ObjectRecordOrderByForScalarField,
   ObjectRecordOrderByForCompositeField,
+  ObjectRecordOrderByForRelationField,
 } from './ObjectRecordGroupBy';
 export { OrderByDirection } from './ObjectRecordGroupBy';
 export { ObjectRecordGroupByDateGranularity } from './ObjectRecordGroupByDateGranularity';
@@ -170,9 +176,11 @@ export type { RelationAndMorphRelationFieldMetadataType } from './RelationAndMor
 export type { RelationCreationPayload } from './RelationCreationPayload';
 export { RelationOnDeleteAction } from './RelationOnDeleteAction.type';
 export { RelationType } from './RelationType';
+export type { RelationUpdatePayload } from './RelationUpdatePayload';
 export type { RestrictedFieldPermissions } from './RestrictedFieldPermissions';
 export type { RestrictedFieldsPermissions } from './RestrictedFieldsPermissions';
 export { SettingsPath } from './SettingsPath';
+export type { Sources } from './SourcesType';
 export type {
   StepFilterGroup,
   StepFilter,

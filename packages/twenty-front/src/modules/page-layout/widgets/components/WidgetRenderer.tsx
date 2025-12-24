@@ -6,20 +6,24 @@ import { isPageLayoutInEditModeComponentState } from '@/page-layout/states/isPag
 import { pageLayoutDraggingWidgetIdComponentState } from '@/page-layout/states/pageLayoutDraggingWidgetIdComponentState';
 import { pageLayoutEditingWidgetIdComponentState } from '@/page-layout/states/pageLayoutEditingWidgetIdComponentState';
 import { pageLayoutResizingWidgetIdComponentState } from '@/page-layout/states/pageLayoutResizingWidgetIdComponentState';
+import { type PageLayoutWidget } from '@/page-layout/types/PageLayoutWidget';
 import { PageLayoutWidgetForbiddenDisplay } from '@/page-layout/widgets/components/PageLayoutWidgetForbiddenDisplay';
 import { WidgetContentRenderer } from '@/page-layout/widgets/components/WidgetContentRenderer';
 import { useIsInPinnedTab } from '@/page-layout/widgets/hooks/useIsInPinnedTab';
+import { useWidgetActions } from '@/page-layout/widgets/hooks/useWidgetActions';
 import { useWidgetPermissions } from '@/page-layout/widgets/hooks/useWidgetPermissions';
+import { WidgetComponentInstanceContext } from '@/page-layout/widgets/states/contexts/WidgetComponentInstanceContext';
+import { widgetCardHoveredComponentFamilyState } from '@/page-layout/widgets/states/widgetCardHoveredComponentFamilyState';
+import { getWidgetCardVariant } from '@/page-layout/widgets/utils/getWidgetCardVariant';
 import { WidgetCard } from '@/page-layout/widgets/widget-card/components/WidgetCard';
 import { WidgetCardContent } from '@/page-layout/widgets/widget-card/components/WidgetCardContent';
 import { WidgetCardHeader } from '@/page-layout/widgets/widget-card/components/WidgetCardHeader';
 import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
 import { useSetRecoilComponentFamilyState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentFamilyState';
-import { widgetCardHoveredComponentFamilyState } from '@/page-layout/widgets/states/widgetCardHoveredComponentFamilyState';
 import { useTheme } from '@emotion/react';
 import { type MouseEvent } from 'react';
 import { IconLock } from 'twenty-ui/display';
-import { PageLayoutType, type PageLayoutWidget } from '~/generated/graphql';
+import { WidgetType } from '~/generated/graphql';
 
 type WidgetRendererProps = {
   widget: PageLayoutWidget;
@@ -59,7 +63,12 @@ export const WidgetRenderer = ({ widget }: WidgetRendererProps) => {
 
   const { currentPageLayout } = useCurrentPageLayoutOrThrow();
 
-  const showHeader = layoutMode !== 'canvas' && !isInPinnedTab;
+  // TODO: when we have more widgets without headers, we should use a more generic approach to hide the header
+  // each widget type could have metadata (e.g., hasHeader: boolean or headerMode: 'always' | 'editOnly' | 'never')
+  const isRichTextWidget = widget.type === WidgetType.STANDALONE_RICH_TEXT;
+  const hideRichTextHeader = isRichTextWidget && !isPageLayoutInEditMode;
+
+  const showHeader = layoutMode !== 'canvas' && !hideRichTextHeader;
 
   const handleClick = () => {
     handleEditWidget({
@@ -86,50 +95,58 @@ export const WidgetRenderer = ({ widget }: WidgetRendererProps) => {
     setIsHovered(false);
   };
 
-  return (
-    <WidgetCard
-      isDragging={isDragging}
-      isResizing={isResizing}
-      layoutMode={layoutMode}
-      isEditing={isEditing}
-      pageLayoutType={currentPageLayout.type}
-      isInPinnedTab={isInPinnedTab}
-      onClick={isPageLayoutInEditMode ? handleClick : undefined}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {showHeader && (
-        <WidgetCardHeader
-          widgetId={widget.id}
-          isInEditMode={isPageLayoutInEditMode}
-          isResizing={isResizing}
-          title={widget.title}
-          onRemove={handleRemove}
-          forbiddenDisplay={
-            !hasAccess && (
-              <PageLayoutWidgetForbiddenDisplay
-                widgetId={widget.id}
-                restriction={restriction}
-              />
-            )
-          }
-        />
-      )}
+  const variant = getWidgetCardVariant({
+    layoutMode,
+    isInPinnedTab,
+    pageLayoutType: currentPageLayout.type,
+  });
 
-      <WidgetCardContent
-        layoutMode={layoutMode}
-        pageLayoutType={currentPageLayout.type}
-        isInPinnedTab={isInPinnedTab}
-        isPageLayoutInEditMode={isPageLayoutInEditMode}
+  const actions = useWidgetActions({ widget });
+
+  return (
+    <WidgetComponentInstanceContext.Provider value={{ instanceId: widget.id }}>
+      <WidgetCard
+        headerLess={!showHeader}
+        variant={variant}
+        isEditable={isPageLayoutInEditMode}
+        onClick={isPageLayoutInEditMode ? handleClick : undefined}
+        isEditing={isEditing}
+        isDragging={isDragging}
+        isResizing={isResizing}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        data-widget-id={widget.id}
+        className="widget"
       >
-        {hasAccess && <WidgetContentRenderer widget={widget} />}
-        {!hasAccess && currentPageLayout.type === PageLayoutType.DASHBOARD && (
-          <IconLock
-            color={theme.font.color.tertiary}
-            stroke={theme.icon.stroke.sm}
+        {showHeader && (
+          <WidgetCardHeader
+            widgetId={widget.id}
+            isInEditMode={isPageLayoutInEditMode}
+            isResizing={isResizing}
+            title={widget.title}
+            onRemove={handleRemove}
+            actions={actions}
+            forbiddenDisplay={
+              !hasAccess && (
+                <PageLayoutWidgetForbiddenDisplay
+                  widgetId={widget.id}
+                  restriction={restriction}
+                />
+              )
+            }
           />
         )}
-      </WidgetCardContent>
-    </WidgetCard>
+
+        <WidgetCardContent variant={variant}>
+          {hasAccess && <WidgetContentRenderer widget={widget} />}
+          {!hasAccess && (
+            <IconLock
+              color={theme.font.color.tertiary}
+              stroke={theme.icon.stroke.sm}
+            />
+          )}
+        </WidgetCardContent>
+      </WidgetCard>
+    </WidgetComponentInstanceContext.Provider>
   );
 };

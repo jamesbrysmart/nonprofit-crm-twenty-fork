@@ -1,0 +1,242 @@
+---
+title: Importați contacte via CSV
+description: Ghid complet, pas cu pas, pentru importul persoanelor/contactelor în Twenty.
+---
+
+## Prezentare generală
+
+Acest ghid vă arată cum să importați contactele (Persoane) în Twenty. **Importați Companiile mai întâi** dacă doriți să legați Persoanele de Companii.
+
+## Înainte de a începe
+
+### Listă de verificare a condițiilor prealabile
+
+<Check>
+  Fișierul este în format CSV, XLSX sau XLS
+</Check>
+
+<Check>
+  Fișierul are mai puțin de 10.000 de înregistrări
+</Check>
+
+<Check>
+  Nicio adresă de e-mail duplicată în fișier
+</Check>
+
+<Check>
+  **Companiile importate mai întâi** (dacă legați Persoane de Companii)
+</Check>
+
+<Check>
+  Toate câmpurile personalizate există în **Setări → Model de date**
+</Check>
+
+<Warning>
+  **Importați Companiile înaintea Persoanelor**
+
+  Dacă doriți să legați Persoane de Companii, importați mai întâi Companiile. Compania trebuie să existe înainte de a o putea referi.
+</Warning>
+
+## Pasul 1: Pregătiți datele de contact
+
+### Câmpuri obligatorii și recomandate
+
+| Câmp                      | Obligatoriu? | Format            | Notițe                               |
+| ------------------------- | ------------ | ----------------- | ------------------------------------ |
+| **Email**                 | Recomandat   | `name@domain.com` | Trebuie să fie unică                 |
+| **Prenume**               | Recomandat   | Text              |                                      |
+| **Nume de familie**       | Recomandat   | Text              |                                      |
+| **Companie**              | Opțional     | Domeniu sau ID    | Leagă de Compania existentă          |
+| **Telefon**               | Opțional     | Mai multe coloane | Consultați mai jos                   |
+| **Funcție**               | Opțional     | Text              |                                      |
+| **Câmpuri personalizate** | Opțional     | Variază           | Trebuie să existe în Modelul de date |
+
+### Format e-mail
+
+* Trebuie să fie în format de e-mail valid: `name@domain.com`
+* **Trebuie să fie unică** — fără duplicate în fișierul dvs. sau în Twenty
+* Pentru e-mailuri suplimentare, folosiți coloana **Emails / Additional Emails**:
+
+```
+["jane@twenty.com","jane.doe@twenty.com"]
+```
+
+### Format telefon
+
+Telefonul este un **câmp îmbricat** care necesită mai multe coloane:
+
+| Coloană                                 | Exemplu      |
+| --------------------------------------- | ------------ |
+| **Phones / Primary Phone Number**       | `4159095555` |
+| **Phones / Primary Phone Country Code** | `US`         |
+| **Phones / Primary Phone Calling Code** | `+1`         |
+
+### Conectarea la Companii
+
+Adăugați o coloană cu identificatorul unic al Companiei:
+
+| Nume coloană    | Format     | Exemplu                                |
+| --------------- | ---------- | -------------------------------------- |
+| `companyDomain` | Format URL | `https://acme.com`                     |
+| `companyId`     | UUID       | `c776ee49-f608-4a77-8cc8-6fe96ae1e43f` |
+
+<Note>
+  **Folosiți formatul URL de domeniu** (`https://acme.com`), nu eticheta. Acest lucru corespunde modului în care Companiile sunt stocate în Twenty.
+</Note>
+
+### Exemplu de structură CSV
+
+```csv
+firstName,lastName,email,jobTitle,companyDomain,Phones / Primary Phone Number,Phones / Primary Phone Country Code
+John,Smith,john@acme.com,CEO,https://acme.com,4159095555,US
+Jane,Doe,jane@widgets.co,CTO,https://widgets.co,2125551234,US
+```
+
+<Note>
+  **Sfat profesional:** Faceți clic pe **Download sample file** în timpul importului sau exportați câteva Persoane existente pentru a vedea denumirile exacte ale coloanelor pe care le așteaptă Twenty.
+</Note>
+
+## Pasul 2: Accesați funcția de import
+
+**Opțiunea 1: Din vizualizarea Persoane**
+
+1. Navigați la **Persoane** în bara laterală stângă
+2. Faceți clic pe pictograma **⋮** din dreapta sus
+3. Selectați **Importă înregistrări**
+
+**Opțiunea 2: Folosind meniul de comenzi**
+
+1. Apăsați `Cmd + K` (Mac) sau `Ctrl + K` (Windows)
+2. Tastați "import"
+3. Selectați **Importă înregistrări**
+4. Alegeți **Persoane**
+
+## Pasul 3: Încărcați fișierul
+
+1. Faceți clic pe **Select file**
+2. Alegeți fișierul CSV, XLSX sau XLS
+3. Așteptați ca Twenty să analizeze fișierul
+
+## Pasul 4: Mapați coloanele
+
+Twenty încearcă automat să potrivească coloanele cu câmpurile. Revizuiți și ajustați:
+
+1. **Verificați mapările automate** — confirmați că sunt corecte
+2. **Corectați mapările incorecte** — faceți clic pe lista derulantă pentru a selecta câmpul corect
+3. **Omiteți coloanele** — selectați **Do not map** pentru coloanele pe care nu doriți să le importați
+
+### Reguli importante de mapare
+
+| Tip coloană            | Mapați la                      | Notițe                                 |
+| ---------------------- | ------------------------------ | -------------------------------------- |
+| Referință companie     | Câmpul de relație **Company**  | Folosiți domeniul SAU id-ul, nu ambele |
+| Email                  | **Email**                      | Adresă de e-mail principală            |
+| E-mailuri suplimentare | **Emails / Additional Emails** | Format de array                        |
+| Telefon                | Coloane separate               | Număr, Codul țării, Prefix de apelare  |
+
+<img src="/images/user-guide/import-export-data/match-columns.png" style={{width:'100%'}} />
+
+### Maparea relației de Companie
+
+Când mapați coloana companiei:
+
+1. Găsiți coloana de referință a companiei (de ex., `companyDomain`)
+2. Mapați-o la câmpul de relație **Company**
+3. Twenty va lega fiecare Persoană de Compania corespunzătoare
+
+<Warning>
+  **Mapați un singur identificator unic pentru relații.**
+
+  Don't map both `companyId` AND `companyDomain`. Choose one—preferably domain since it's human-readable.
+</Warning>
+
+## Step 5: Map Select Field Values
+
+If you have Select or Multi-Select fields (like Lead Source):
+
+1. Twenty shows your values alongside existing options
+2. Match each value in your file to a Twenty option
+3. Or create new options if needed
+
+<Note>
+  Select options use **API names**, not display labels. Check **Settings → Data Model** → Enable **Advanced mode** to see API names.
+</Note>
+
+## Step 6: Review and Fix Errors
+
+Before completing the import, Twenty validates your data:
+
+1. Click **Next Steps**
+2. Rows with errors are highlighted in **yellow**
+3. **Fix errors directly** — click a cell and edit the value
+4. **Remove problematic rows** — click the X to skip that row
+
+### Common Contact Import Errors
+
+| Eroare                     | Cause                                  | Solution                                    |
+| -------------------------- | -------------------------------------- | ------------------------------------------- |
+| **Duplicate email**        | Email already exists in Twenty or file | Remove duplicate or update existing record  |
+| **Invalid email format**   | Email format incorrect                 | Fix to `name@domain.com`                    |
+| **Relation not found**     | Company doesn't exist                  | Import Companies first or fix the reference |
+| **Missing required field** | Required field is empty                | Fill in the value or remove the row         |
+
+## Step 7: Complete the Import
+
+1. Review the import summary
+2. Click **Confirm** to import
+3. Wait for the import to complete
+4. Verify by checking a few records and their Company links
+
+## After Importing Contacts
+
+Your contacts are now in Twenty! Next steps:
+
+1. **Verify Company links** — open a few People records to confirm they're linked to the right Company
+2. **Import Opportunities** — if needed, link them to People and Companies
+3. **Set up email sync** — connect your mailbox to see email history on contact records
+
+## Updating Existing Contacts
+
+To update contacts instead of creating new ones:
+
+1. Include the `email` or `id` column in your file
+2. Twenty matches records by this unique identifier
+3. Existing contacts are updated; new ones are created
+
+See [How to Update Existing Records](/l/ro/user-guide/data-migration/how-tos/update-existing-records-via-import) for details.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Why can't two People have the same email?">
+    Email is a unique identifier in Twenty. This prevents duplicate contacts and ensures email sync correctly links emails to the right person.
+  </Accordion>
+
+  <Accordion title="What if I have people without an email?">
+    You can leave the email empty. However, we recommend adding emails when possible for better data quality and email sync functionality.
+  </Accordion>
+
+  <Accordion title="How do I link People to Companies during import?">
+    Add a column with the Company's domain (e.g., `https://acme.com`) or ID. During mapping, connect this column to the Company relation field.
+  </Accordion>
+
+  <Accordion title="What if the Company doesn't exist yet?">
+    Import Companies first, then import People. The Company must exist before you can reference it.
+  </Accordion>
+
+  <Accordion title="Can I import the ID from my previous CRM?">
+    Da! Create a custom field marked as "unique" in your data model to store the external ID. Note: the field name `id` is reserved for Twenty's internal ID.
+  </Accordion>
+
+  <Accordion title="How do I fix 'relation not found' errors?">
+    The Company you're referencing doesn't exist. Either import the Company first, or check that the domain/ID exactly matches an existing Company.
+  </Accordion>
+</AccordionGroup>
+
+## Depanare
+
+Having issues? Check:
+
+* [How to Fix Import Errors](/l/ro/user-guide/data-migration/how-tos/fix-import-errors)
+* [How to Import Relations](/l/ro/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv)
+* [Field Mapping Reference](/l/ro/user-guide/data-migration/capabilities/field-mapping)

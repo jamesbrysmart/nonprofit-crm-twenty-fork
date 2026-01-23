@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   qa_report:
-    if: ${{ secrets.CROWDIN_PERSONAL_TOKEN != '' }}
+    if: ${{ secrets.CROWDIN_PERSONAL_TOKEN != '' && (github.event_name != 'schedule' || github.repository == 'twentyhq/twenty') }}
     name: Generate QA Report
     runs-on: ubuntu-latest
     steps:

@@ -1,6 +1,7 @@
 import { Field, HideField, InputType } from '@nestjs/graphql';
 
 import {
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsObject,
@@ -53,5 +54,20 @@ export class CreateServerlessFunctionInput {
   @IsString()
   @Field({ nullable: true })
   @IsOptional()
-  handlerPath?: string;
+  sourceHandlerPath?: string;
+
+  @IsString()
+  @Field({ nullable: true })
+  @IsOptional()
+  builtHandlerPath?: string;
+
+  @Field(() => graphqlTypeJson, { nullable: true })
+  @IsObject()
+  @IsOptional()
+  toolInputSchema?: object;
+
+  @IsBoolean()
+  @Field({ nullable: true })
+  @IsOptional()
+  isTool?: boolean;
 }

@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
+  IsIn,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -17,19 +18,21 @@ import {
 import { GraphQLJSON } from 'graphql-type-json';
 import { CalendarStartDay } from 'twenty-shared/constants';
 
-import { ObjectRecordFilter } from 'src/engine/api/graphql/workspace-query-builder/interfaces/object-record.interface';
-
 import { AggregateOperations } from 'src/engine/api/graphql/graphql-query-runner/constants/aggregate-operations.constant';
 import { UUIDScalarType } from 'src/engine/api/graphql/workspace-schema-builder/graphql-types/scalars';
 import { RatioAggregateConfigDTO } from 'src/engine/metadata-modules/page-layout-widget/dtos/ratio-aggregate-config.dto';
-import { GraphType } from 'src/engine/metadata-modules/page-layout-widget/enums/graph-type.enum';
+import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout-widget/enums/widget-configuration-type.type';
+import { ChartFilter } from 'src/engine/metadata-modules/page-layout-widget/types/chart-filter.type';
+import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('AggregateChartConfiguration')
-export class AggregateChartConfigurationDTO {
-  @Field(() => GraphType)
-  @IsEnum(GraphType)
+export class AggregateChartConfigurationDTO
+  implements PageLayoutWidgetConfigurationBase
+{
+  @Field(() => WidgetConfigurationType)
+  @IsIn([WidgetConfigurationType.AGGREGATE_CHART])
   @IsNotEmpty()
-  graphType: GraphType.AGGREGATE;
+  configurationType: WidgetConfigurationType.AGGREGATE_CHART;
 
   @Field(() => UUIDScalarType)
   @IsUUID()
@@ -64,7 +67,7 @@ export class AggregateChartConfigurationDTO {
   @Field(() => GraphQLJSON, { nullable: true })
   @IsObject()
   @IsOptional()
-  filter?: ObjectRecordFilter;
+  filter?: ChartFilter;
 
   @Field(() => String, { nullable: true, defaultValue: 'UTC' })
   @IsTimeZone()

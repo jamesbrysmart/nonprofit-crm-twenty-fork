@@ -2,15 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
+  type Relation,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { SyncableEntity } from 'src/engine/workspace-manager/workspace-sync/interfaces/syncable-entity.interface';
 
 import { type WorkspaceEntityDuplicateCriteria } from 'src/engine/api/graphql/workspace-query-builder/types/workspace-entity-duplicate-criteria.type';
 import { DataSourceEntity } from 'src/engine/metadata-modules/data-source/data-source.entity';
@@ -20,6 +19,7 @@ import { type ObjectStandardOverridesDTO } from 'src/engine/metadata-modules/obj
 import { FieldPermissionEntity } from 'src/engine/metadata-modules/object-permission/field-permission/field-permission.entity';
 import { ObjectPermissionEntity } from 'src/engine/metadata-modules/object-permission/object-permission.entity';
 import { ViewEntity } from 'src/engine/metadata-modules/view/entities/view.entity';
+import { SyncableEntity } from 'src/engine/workspace-manager/types/syncable-entity.interface';
 
 @Entity('objectMetadata')
 @Unique('IDX_OBJECT_METADATA_NAME_SINGULAR_WORKSPACE_ID_UNIQUE', [
@@ -30,6 +30,7 @@ import { ViewEntity } from 'src/engine/metadata-modules/view/entities/view.entit
   'namePlural',
   'workspaceId',
 ])
+@Index('IDX_OBJECT_METADATA_DATA_SOURCE_ID', ['dataSourceId'])
 export class ObjectMetadataEntity
   extends SyncableEntity
   implements Required<ObjectMetadataEntity>
@@ -106,10 +107,6 @@ export class ObjectMetadataEntity
 
   @Column({ default: false })
   isLabelSyncedWithName: boolean;
-
-  // TODO create a relation to workspace with cascade delete will also create foreignKey
-  @Column({ nullable: false, type: 'uuid' })
-  workspaceId: string;
 
   @OneToMany(() => FieldMetadataEntity, (field) => field.object, {
     cascade: true,

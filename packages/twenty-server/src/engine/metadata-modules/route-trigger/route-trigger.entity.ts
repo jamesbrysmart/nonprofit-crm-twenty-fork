@@ -1,7 +1,9 @@
+import { HTTPMethod } from 'twenty-shared/types';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -9,16 +11,9 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { HTTPMethod } from 'twenty-shared/types';
 
-import { SyncableEntity } from 'src/engine/workspace-manager/workspace-sync/interfaces/syncable-entity.interface';
-
-import { RouteTriggerEntityRelationProperties } from 'src/engine/metadata-modules/route-trigger/types/flat-route-trigger.type';
 import { ServerlessFunctionEntity } from 'src/engine/metadata-modules/serverless-function/serverless-function.entity';
-
-export const ROUTE_TRIGGER_ENTITY_RELATION_PROPERTIES = [
-  'serverlessFunction',
-] as const satisfies readonly RouteTriggerEntityRelationProperties[];
+import { SyncableEntity } from 'src/engine/workspace-manager/types/syncable-entity.interface';
 
 @Entity({ name: 'routeTrigger', schema: 'core' })
 @Unique('IDX_ROUTE_TRIGGER_PATH_HTTP_METHOD_WORKSPACE_ID_UNIQUE', [
@@ -26,6 +21,7 @@ export const ROUTE_TRIGGER_ENTITY_RELATION_PROPERTIES = [
   'httpMethod',
   'workspaceId',
 ])
+@Index('IDX_ROUTE_TRIGGER_SERVERLESS_FUNCTION_ID', ['serverlessFunctionId'])
 export class RouteTriggerEntity
   extends SyncableEntity
   implements Required<RouteTriggerEntity>
@@ -47,6 +43,9 @@ export class RouteTriggerEntity
   })
   httpMethod: HTTPMethod;
 
+  @Column({ nullable: false, type: 'jsonb', default: [] })
+  forwardedRequestHeaders: string[];
+
   @ManyToOne(
     () => ServerlessFunctionEntity,
     (serverlessFunction) => serverlessFunction.routeTriggers,
@@ -57,9 +56,6 @@ export class RouteTriggerEntity
 
   @Column({ nullable: false, type: 'uuid' })
   serverlessFunctionId: string;
-
-  @Column({ nullable: false, type: 'uuid' })
-  workspaceId: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

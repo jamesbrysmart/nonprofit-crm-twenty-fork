@@ -13,13 +13,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { SyncableEntity } from 'src/engine/workspace-manager/workspace-sync/interfaces/syncable-entity.interface';
-
 import { CronTriggerEntity } from 'src/engine/metadata-modules/cron-trigger/entities/cron-trigger.entity';
 import { DatabaseEventTriggerEntity } from 'src/engine/metadata-modules/database-event-trigger/entities/database-event-trigger.entity';
 import { RouteTriggerEntity } from 'src/engine/metadata-modules/route-trigger/route-trigger.entity';
 import { ServerlessFunctionLayerEntity } from 'src/engine/metadata-modules/serverless-function-layer/serverless-function-layer.entity';
-import { ServerlessFunctionEntityRelationProperties } from 'src/engine/metadata-modules/serverless-function/types/flat-serverless-function.type';
+import { SyncableEntity } from 'src/engine/workspace-manager/types/syncable-entity.interface';
 
 const DEFAULT_SERVERLESS_TIMEOUT_SECONDS = 300; // 5 minutes
 
@@ -28,17 +26,13 @@ export enum ServerlessFunctionRuntime {
   NODE22 = 'nodejs22.x',
 }
 
-export const DEFAULT_HANDLER_PATH = 'src/index.ts';
+export const DEFAULT_SOURCE_HANDLER_PATH = 'src/index.ts';
+export const DEFAULT_BUILT_HANDLER_PATH = 'index.mjs';
 export const DEFAULT_HANDLER_NAME = 'main';
-
-export const SERVERLESS_FUNCTION_ENTITY_RELATION_PROPERTIES = [
-  'cronTriggers',
-  'databaseEventTriggers',
-  'routeTriggers',
-] as const satisfies readonly ServerlessFunctionEntityRelationProperties[];
 
 @Entity('serverlessFunction')
 @Index('IDX_SERVERLESS_FUNCTION_ID_DELETED_AT', ['id', 'deletedAt'])
+@Index('IDX_SERVERLESS_FUNCTION_LAYER_ID', ['serverlessFunctionLayerId'])
 export class ServerlessFunctionEntity
   extends SyncableEntity
   implements Required<ServerlessFunctionEntity>
@@ -49,8 +43,11 @@ export class ServerlessFunctionEntity
   @Column({ nullable: false })
   name: string;
 
-  @Column({ nullable: false, default: DEFAULT_HANDLER_PATH })
-  handlerPath: string;
+  @Column({ nullable: false, default: DEFAULT_SOURCE_HANDLER_PATH })
+  sourceHandlerPath: string;
+
+  @Column({ nullable: false, default: DEFAULT_BUILT_HANDLER_PATH })
+  builtHandlerPath: string;
 
   @Column({ nullable: false, default: DEFAULT_HANDLER_NAME })
   handlerName: string;
@@ -71,11 +68,14 @@ export class ServerlessFunctionEntity
   @Check(`"timeoutSeconds" >= 1 AND "timeoutSeconds" <= 900`)
   timeoutSeconds: number;
 
-  @Column({ nullable: false, type: 'uuid' })
-  workspaceId: string;
-
   @Column({ nullable: true, type: 'text' })
   checksum: string | null;
+
+  @Column({ nullable: true, type: 'jsonb' })
+  toolInputSchema: object | null;
+
+  @Column({ nullable: false, default: false })
+  isTool: boolean;
 
   @Column({ nullable: false, type: 'uuid' })
   serverlessFunctionLayerId: string;

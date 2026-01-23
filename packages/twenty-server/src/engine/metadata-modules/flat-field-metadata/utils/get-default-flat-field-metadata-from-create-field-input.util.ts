@@ -1,4 +1,5 @@
 import { extractAndSanitizeObjectStringFields } from 'twenty-shared/utils';
+import { v4 } from 'uuid';
 
 import { type CreateFieldInput } from 'src/engine/metadata-modules/field-metadata/dtos/create-field.input';
 import { generateDefaultValue } from 'src/engine/metadata-modules/field-metadata/utils/generate-default-value';
@@ -48,8 +49,7 @@ export const getDefaultFlatFieldMetadata = ({
     standardId: createFieldInput.standardId ?? null,
     standardOverrides: null,
     type: createFieldInput.type,
-    universalIdentifier:
-      createFieldInput.universalIdentifier ?? fieldMetadataId,
+    universalIdentifier: createFieldInput.universalIdentifier ?? v4(),
     workspaceId,
     options: createFieldInput.options ?? null,
     defaultValue: defaultValue ?? generateDefaultValue(createFieldInput.type),
@@ -58,7 +58,8 @@ export const getDefaultFlatFieldMetadata = ({
     updatedAt: createdAt,
     isUIReadOnly: createFieldInput.isUIReadOnly ?? false,
     morphId: null,
-    applicationId: workspaceCustomApplicationId,
+    applicationId:
+      createFieldInput.applicationId ?? workspaceCustomApplicationId,
     viewFilterIds: [],
     kanbanAggregateOperationViewIds: [],
   } as const satisfies FlatFieldMetadata;

@@ -89,7 +89,7 @@ describe('WorkspaceRepository', () => {
       morphId: null,
       standardId: null,
       standardOverrides: null,
-      applicationId: null,
+      applicationId: 'application-id',
       relationTargetFieldMetadataId: null,
       relationTargetObjectMetadataId: null,
       calendarViewIds: [],
@@ -118,8 +118,19 @@ describe('WorkspaceRepository', () => {
         idByUniversalIdentifier: {},
         universalIdentifiersByApplicationId: {},
       },
+      flatRowLevelPermissionPredicateMaps: {
+        byId: {},
+        idByUniversalIdentifier: {},
+        universalIdentifiersByApplicationId: {},
+      },
+      flatRowLevelPermissionPredicateGroupMaps: {
+        byId: {},
+        idByUniversalIdentifier: {},
+        universalIdentifiersByApplicationId: {},
+      },
       objectIdByNameSingular: {},
-      featureFlagsMap: {},
+      featureFlagsMap: {} as FeatureFlagMap,
+      userWorkspaceRoleMap: {},
       eventEmitterService: {} as unknown,
     } as unknown as WorkspaceInternalContext;
 
@@ -134,6 +145,8 @@ describe('WorkspaceRepository', () => {
         canSoftDeleteObjectRecords: false,
         canDestroyObjectRecords: false,
         restrictedFields: {},
+        rowLevelPermissionPredicates: [],
+        rowLevelPermissionPredicateGroups: [],
       },
     };
     mockQueryRunner = {} as QueryRunner;

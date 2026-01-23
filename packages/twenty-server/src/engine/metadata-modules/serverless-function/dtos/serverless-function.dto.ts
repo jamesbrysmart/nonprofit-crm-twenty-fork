@@ -7,12 +7,16 @@ import {
 } from '@ptc-org/nestjs-query-graphql';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsNotEmpty,
   IsNumber,
+  IsObject,
+  IsOptional,
   IsString,
   IsUUID,
 } from 'class-validator';
+import graphqlTypeJson from 'graphql-type-json';
 
 import { UUIDScalarType } from 'src/engine/api/graphql/workspace-schema-builder/graphql-types/scalars';
 import { CronTriggerDTO } from 'src/engine/metadata-modules/cron-trigger/dtos/cron-trigger.dto';
@@ -59,7 +63,11 @@ export class ServerlessFunctionDTO {
 
   @IsString()
   @Field()
-  handlerPath: string;
+  sourceHandlerPath: string;
+
+  @IsString()
+  @Field()
+  builtHandlerPath: string;
 
   @IsString()
   @Field()
@@ -69,6 +77,15 @@ export class ServerlessFunctionDTO {
   @Field(() => [String], { nullable: false })
   publishedVersions: string[];
 
+  @IsObject()
+  @IsOptional()
+  @Field(() => graphqlTypeJson, { nullable: true })
+  toolInputSchema?: object;
+
+  @IsBoolean()
+  @Field()
+  isTool: boolean;
+
   @Field(() => [CronTriggerDTO], { nullable: true })
   cronTriggers?: CronTriggerDTO[];
 
@@ -77,6 +94,16 @@ export class ServerlessFunctionDTO {
 
   @Field(() => [RouteTriggerDTO], { nullable: true })
   routeTriggers?: RouteTriggerDTO[];
+
+  @IsUUID()
+  @IsOptional()
+  @Field(() => UUIDScalarType, { nullable: true })
+  applicationId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  @Field(() => UUIDScalarType, { nullable: true })
+  universalIdentifier?: string;
 
   @HideField()
   workspaceId: string;

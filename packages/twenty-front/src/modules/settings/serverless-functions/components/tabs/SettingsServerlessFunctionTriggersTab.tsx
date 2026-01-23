@@ -1,15 +1,16 @@
-import { H2Title, OverflowingTextWithTooltip } from 'twenty-ui/display';
-import { Section } from 'twenty-ui/layout';
-import { type ServerlessFunction } from '~/generated/graphql';
-import { useLingui } from '@lingui/react/macro';
-import { SettingsDatabaseEventsForm } from '@/settings/components/SettingsDatabaseEventsForm';
 import { FormTextFieldInput } from '@/object-record/record-field/ui/form-types/components/FormTextFieldInput';
+import { SettingsDatabaseEventsForm } from '@/settings/components/SettingsDatabaseEventsForm';
 import { Table } from '@/ui/layout/table/components/Table';
+import { TableCell } from '@/ui/layout/table/components/TableCell';
+import { TableHeader } from '@/ui/layout/table/components/TableHeader';
 import { TableRow } from '@/ui/layout/table/components/TableRow';
 import styled from '@emotion/styled';
-import { TableCell } from '@/ui/layout/table/components/TableCell';
+import { useLingui } from '@lingui/react/macro';
 import { Tag } from 'twenty-ui/components';
-import { TableHeader } from '@/ui/layout/table/components/TableHeader';
+import { H2Title, OverflowingTextWithTooltip } from 'twenty-ui/display';
+import { Section } from 'twenty-ui/layout';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { type ServerlessFunction } from '~/generated/graphql';
 
 export const StyledRouteTriggerTableRow = styled(TableRow)`
   grid-template-columns: 1fr 120px 120px;
@@ -24,6 +25,16 @@ const StyledTableCell = styled(TableCell)`
 
 const StyledRouteTriggerTableHeaderRow = styled(StyledRouteTriggerTableRow)`
   margin-bottom: ${({ theme }) => theme.spacing(2)};
+`;
+
+const StyledEmptyState = styled.div`
+  align-items: center;
+  color: ${({ theme }) => theme.font.color.tertiary};
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.md};
+  height: 160px;
+  justify-content: center;
+  text-align: center;
 `;
 
 export const SettingsServerlessFunctionTriggersTab = ({
@@ -43,8 +54,27 @@ export const SettingsServerlessFunctionTriggersTab = ({
     const [object, action]: [string, string] =
       event.settings.eventName.split('.');
 
-    return { object, action };
+    return { object, action, updatedFields: event.settings.updatedFields };
   });
+
+  const hasNoTriggers =
+    databaseEvents.length === 0 &&
+    cronTriggers.length === 0 &&
+    routeTriggers.length === 0;
+
+  if (hasNoTriggers) {
+    return (
+      <Section>
+        <H2Title
+          title={t`Triggers`}
+          description={t`Configure when this function should be executed`}
+        />
+        <StyledEmptyState>
+          {t`No triggers configured for this function.`}
+        </StyledEmptyState>
+      </Section>
+    );
+  }
 
   return (
     <>
@@ -93,7 +123,9 @@ export const SettingsServerlessFunctionTriggersTab = ({
             {routeTriggers.map((routeTrigger, index) => (
               <StyledRouteTriggerTableRow key={index}>
                 <StyledTableCell>
-                  <OverflowingTextWithTooltip text={routeTrigger.path} />
+                  <OverflowingTextWithTooltip
+                    text={`${REACT_APP_SERVER_BASE_URL}/s${routeTrigger.path}`}
+                  />
                 </StyledTableCell>
                 <StyledTableCell>{routeTrigger.httpMethod}</StyledTableCell>
                 <StyledTableCell>

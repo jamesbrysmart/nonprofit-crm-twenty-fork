@@ -3,6 +3,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
   IsBoolean,
   IsEnum,
+  IsIn,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -15,18 +16,20 @@ import {
 import { GraphQLJSON } from 'graphql-type-json';
 import { CalendarStartDay } from 'twenty-shared/constants';
 
-import { ObjectRecordFilter } from 'src/engine/api/graphql/workspace-query-builder/interfaces/object-record.interface';
-
 import { AggregateOperations } from 'src/engine/api/graphql/graphql-query-runner/constants/aggregate-operations.constant';
 import { UUIDScalarType } from 'src/engine/api/graphql/workspace-schema-builder/graphql-types/scalars';
-import { GraphType } from 'src/engine/metadata-modules/page-layout-widget/enums/graph-type.enum';
+import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout-widget/enums/widget-configuration-type.type';
+import { ChartFilter } from 'src/engine/metadata-modules/page-layout-widget/types/chart-filter.type';
+import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('GaugeChartConfiguration')
-export class GaugeChartConfigurationDTO {
-  @Field(() => GraphType)
-  @IsEnum(GraphType)
+export class GaugeChartConfigurationDTO
+  implements PageLayoutWidgetConfigurationBase
+{
+  @Field(() => WidgetConfigurationType)
+  @IsIn([WidgetConfigurationType.GAUGE_CHART])
   @IsNotEmpty()
-  graphType: GraphType.GAUGE;
+  configurationType: WidgetConfigurationType.GAUGE_CHART;
 
   @Field(() => UUIDScalarType)
   @IsUUID()
@@ -56,7 +59,7 @@ export class GaugeChartConfigurationDTO {
   @Field(() => GraphQLJSON, { nullable: true })
   @IsObject()
   @IsOptional()
-  filter?: ObjectRecordFilter;
+  filter?: ChartFilter;
 
   @Field(() => String, { nullable: true, defaultValue: 'UTC' })
   @IsTimeZone()

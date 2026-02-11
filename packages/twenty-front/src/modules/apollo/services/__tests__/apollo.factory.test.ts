@@ -27,6 +27,7 @@ jest.mock('@/auth/services/AuthService', () => {
 
 const mockOnError = jest.fn();
 const mockOnNetworkError = jest.fn();
+const mockOnPayloadTooLarge = jest.fn();
 
 const mockWorkspaceMember = {
   id: 'workspace-member-id',
@@ -65,6 +66,7 @@ const mockWorkspace = {
   },
   isTwoFactorAuthenticationEnforced: false,
   trashRetentionDays: 14,
+  eventLogRetentionDays: 365 * 3,
   fastModel: DEFAULT_FAST_MODEL,
   smartModel: DEFAULT_SMART_MODEL,
   routerModel: 'auto',
@@ -80,6 +82,7 @@ const createMockOptions = (): Options<any> => ({
   isDebugMode: true,
   onError: mockOnError,
   onNetworkError: mockOnNetworkError,
+  onPayloadTooLarge: mockOnPayloadTooLarge,
   appVersion: '1.0.0',
 });
 
@@ -225,4 +228,21 @@ describe('ApolloFactory', () => {
     apolloFactory.updateWorkspaceMember(newWorkspaceMember);
     expect(apolloFactory['currentWorkspaceMember']).toEqual(newWorkspaceMember);
   });
+
+  it('should call onPayloadTooLarge when encountering a 413 error', async () => {
+    fetchMock.mockResponse(() =>
+      Promise.reject({
+        statusCode: 413,
+        message: 'Payload Too Large',
+      }),
+    );
+
+    try {
+      await makeRequest();
+    } catch {
+      expect(mockOnPayloadTooLarge).toHaveBeenCalledWith(
+        expect.stringContaining('Uploaded content is too large'),
+      );
+    }
+  }, 10000);
 });

@@ -4,11 +4,12 @@ import { isDeveloperDefaultSignInPrefilledState } from '@/client-config/states/i
 import { supportChatState } from '@/client-config/states/supportChatState';
 
 import { workspaceAuthProvidersState } from '@/workspace/states/workspaceAuthProvidersState';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 import { useApolloClient } from '@apollo/client';
 import { MockedProvider } from '@apollo/client/testing';
 import { type ReactNode, act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { RecoilRoot, useRecoilValue } from 'recoil';
+import { RecoilRoot } from 'recoil';
 
 import {
   email,
@@ -20,8 +21,7 @@ import {
 import { isMultiWorkspaceEnabledState } from '@/client-config/states/isMultiWorkspaceEnabledState';
 import { SnackBarComponentInstanceContext } from '@/ui/feedback/snack-bar-manager/contexts/SnackBarComponentInstanceContext';
 import { renderHook } from '@testing-library/react';
-import { iconsState } from 'twenty-ui/display';
-import { SupportDriver } from '~/generated/graphql';
+import { SupportDriver } from '~/generated-metadata/graphql';
 
 const redirectSpy = jest.fn();
 
@@ -159,23 +159,21 @@ describe('useAuth', () => {
     const { result } = renderHook(
       () => {
         const client = useApolloClient();
-        const icons = useRecoilValue(iconsState);
-        const workspaceAuthProviders = useRecoilValue(
+        const workspaceAuthProviders = useRecoilValueV2(
           workspaceAuthProvidersState,
         );
-        const billing = useRecoilValue(billingState);
-        const isDeveloperDefaultSignInPrefilled = useRecoilValue(
+        const billing = useRecoilValueV2(billingState);
+        const isDeveloperDefaultSignInPrefilled = useRecoilValueV2(
           isDeveloperDefaultSignInPrefilledState,
         );
-        const supportChat = useRecoilValue(supportChatState);
-        const isMultiWorkspaceEnabled = useRecoilValue(
+        const supportChat = useRecoilValueV2(supportChatState);
+        const isMultiWorkspaceEnabled = useRecoilValueV2(
           isMultiWorkspaceEnabledState,
         );
         return {
           ...useAuth(),
           client,
           state: {
-            icons,
             workspaceAuthProviders,
             billing,
             isDeveloperDefaultSignInPrefilled,
@@ -200,7 +198,6 @@ describe('useAuth', () => {
 
     const { state } = result.current;
 
-    expect(state.icons).toEqual({});
     expect(state.workspaceAuthProviders).toEqual(null);
     expect(state.billing).toBeNull();
     expect(state.isDeveloperDefaultSignInPrefilled).toBe(false);

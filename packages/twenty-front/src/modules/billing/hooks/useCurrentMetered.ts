@@ -1,15 +1,17 @@
-import { type SubscriptionInterval } from '~/generated-metadata/graphql';
-import { BillingProductKey } from '~/generated/graphql';
-import { assertIsDefinedOrThrow, findOrThrow } from 'twenty-shared/utils';
-import type { MeteredBillingPrice } from '@/billing/types/billing-price-tiers.type';
-import { useCurrentPlan } from '@/billing/hooks/useCurrentPlan';
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
-import { useRecoilValue } from 'recoil';
+import { useCurrentPlan } from '@/billing/hooks/useCurrentPlan';
+import type { MeteredBillingPrice } from '@/billing/types/billing-price-tiers.type';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
+import { assertIsDefinedOrThrow, findOrThrow } from 'twenty-shared/utils';
+import {
+  BillingProductKey,
+  type SubscriptionInterval,
+} from '~/generated-metadata/graphql';
 
 export const useCurrentMetered = () => {
   const { currentPlan } = useCurrentPlan();
 
-  const currentWorkspace = useRecoilValue(currentWorkspaceState);
+  const currentWorkspace = useRecoilValueV2(currentWorkspaceState);
 
   assertIsDefinedOrThrow(currentWorkspace);
 

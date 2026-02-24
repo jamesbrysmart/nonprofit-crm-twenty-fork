@@ -10,10 +10,12 @@ import {
   type FrontComponentConfig,
   type LogicFunctionConfig,
 } from '@/sdk';
+import { type ObjectConfig } from '@/sdk/objects/object-config';
+import { type PageLayoutConfig } from '@/sdk/page-layouts/page-layout-config';
+import { type ViewConfig } from '@/sdk/views/view-config';
 import { glob } from 'fast-glob';
-import * as fs from 'fs-extra';
 import { readFile } from 'fs-extra';
-import { basename, extname, relative, sep } from 'path';
+import { basename, extname, relative } from 'path';
 import {
   type ApplicationManifest,
   type AssetManifest,
@@ -22,11 +24,16 @@ import {
   type FrontComponentManifest,
   type LogicFunctionManifest,
   type Manifest,
+  type NavigationMenuItemManifest,
   type ObjectManifest,
+  type PageLayoutManifest,
   type RoleManifest,
+  type SkillManifest,
+  type ViewManifest,
 } from 'twenty-shared/application';
-import { type Sources } from 'twenty-shared/types';
+import { getInputSchemaFromSourceCode } from 'twenty-shared/logic-function';
 import { assertUnreachable } from 'twenty-shared/utils';
+import { getDefaultFieldsInObjectFields } from '@/cli/utilities/build/manifest/utils/get-default-fields-in-object-fields';
 
 const loadSources = async (appPath: string): Promise<string[]> => {
   return await glob(['**/*.ts', '**/*.tsx'], {
@@ -44,32 +51,6 @@ const loadAssets = async (appPath: string) => {
   });
 };
 
-const computeSources = async (
-  appPath: string,
-  sourceFilePaths: string[],
-): Promise<Sources> => {
-  const sources: Sources = {};
-
-  for (const filepath of sourceFilePaths) {
-    const relPath = relative(appPath, filepath);
-    const parts = relPath.split(sep);
-    const content = await fs.readFile(filepath, 'utf8');
-
-    let current: Sources = sources;
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      if (i === parts.length - 1) {
-        current[part] = content;
-      } else {
-        current[part] = (current[part] ?? {}) as Sources;
-        current = current[part] as Sources;
-      }
-    }
-  }
-
-  return sources;
-};
-
 export const buildManifest = async (
   appPath: string,
 ): Promise<{
@@ -84,17 +65,25 @@ export const buildManifest = async (
   const objects: ObjectManifest[] = [];
   const fields: FieldManifest[] = [];
   const roles: RoleManifest[] = [];
+  const skills: SkillManifest[] = [];
   const logicFunctions: LogicFunctionManifest[] = [];
   const frontComponents: FrontComponentManifest[] = [];
   const publicAssets: AssetManifest[] = [];
+  const views: ViewManifest[] = [];
+  const navigationMenuItems: NavigationMenuItemManifest[] = [];
+  const pageLayouts: PageLayoutManifest[] = [];
 
   const applicationFilePaths: string[] = [];
   const objectsFilePaths: string[] = [];
   const fieldsFilePaths: string[] = [];
   const rolesFilePaths: string[] = [];
+  const skillsFilePaths: string[] = [];
   const logicFunctionsFilePaths: string[] = [];
   const frontComponentsFilePaths: string[] = [];
   const publicAssetsFilePaths: string[] = [];
+  const viewsFilePaths: string[] = [];
+  const navigationMenuItemsFilePaths: string[] = [];
+  const pageLayoutsFilePaths: string[] = [];
 
   for (const filePath of filePaths) {
     const fileContent = await readFile(filePath, 'utf-8');
@@ -119,17 +108,44 @@ export const buildManifest = async (
           ...extract.config,
           yarnLockChecksum: null,
           packageJsonChecksum: null,
+          apiClientChecksum: null,
         };
         errors.push(...extract.errors);
         applicationFilePaths.push(relativePath);
         break;
       }
       case ManifestEntityKey.Objects: {
-        const extract = await extractManifestFromFile<ObjectManifest>({
+        const extract = await extractManifestFromFile<ObjectConfig>({
           appPath,
           filePath,
         });
-        objects.push(extract.config);
+
+        const {
+          objectFields: objectFieldsWithDefaults,
+          fields: reverseRelationFields,
+        } = getDefaultFieldsInObjectFields(extract.config);
+
+        const labelIdentifierFieldMetadataUniversalIdentifier =
+          extract.config.labelIdentifierFieldMetadataUniversalIdentifier ??
+          objectFieldsWithDefaults.find((field) => field.name === 'name')
+            ?.universalIdentifier;
+
+        if (!labelIdentifierFieldMetadataUniversalIdentifier) {
+          errors.push(
+            `No label identifier field found for object ${extract.config.nameSingular}. Please add a field with name "name" to your object.`,
+          );
+          break;
+        }
+
+        const objectManifest: ObjectManifest = {
+          ...extract.config,
+          fields: objectFieldsWithDefaults,
+          labelIdentifierFieldMetadataUniversalIdentifier,
+        };
+
+        objects.push(objectManifest);
+        fields.push(...reverseRelationFields);
+
         errors.push(...extract.errors);
         objectsFilePaths.push(relativePath);
         break;
@@ -154,6 +170,16 @@ export const buildManifest = async (
         rolesFilePaths.push(relativePath);
         break;
       }
+      case ManifestEntityKey.Skills: {
+        const extract = await extractManifestFromFile<SkillManifest>({
+          appPath,
+          filePath,
+        });
+        skills.push(extract.config);
+        errors.push(...extract.errors);
+        skillsFilePaths.push(relativePath);
+        break;
+      }
       case ManifestEntityKey.LogicFunctions: {
         const extract = await extractManifestFromFile<LogicFunctionConfig>({
           appPath,
@@ -166,8 +192,13 @@ export const buildManifest = async (
 
         const relativeFilePath = relative(appPath, filePath);
 
+        const toolInputSchema =
+          rest.toolInputSchema ??
+          (await getInputSchemaFromSourceCode(fileContent));
+
         const config: LogicFunctionManifest = {
           ...rest,
+          toolInputSchema,
           handlerName: 'default.config.handler',
           sourceHandlerPath: relativeFilePath,
           builtHandlerPath: relativeFilePath.replace(/\.tsx?$/, '.mjs'),
@@ -196,10 +227,53 @@ export const buildManifest = async (
           sourceComponentPath: relativeFilePath,
           builtComponentPath: relativeFilePath.replace(/\.tsx?$/, '.mjs'),
           builtComponentChecksum: '',
+          isHeadless: rest.isHeadless ?? false,
         };
 
         frontComponents.push(config);
         frontComponentsFilePaths.push(relativePath);
+
+        break;
+      }
+      case ManifestEntityKey.Views: {
+        const extract = await extractManifestFromFile<ViewConfig>({
+          appPath,
+          filePath,
+        });
+
+        const viewManifest: ViewManifest = {
+          ...extract.config,
+        };
+
+        views.push(viewManifest);
+        errors.push(...extract.errors);
+        viewsFilePaths.push(relativePath);
+        break;
+      }
+      case ManifestEntityKey.NavigationMenuItems: {
+        const extract =
+          await extractManifestFromFile<NavigationMenuItemManifest>({
+            appPath,
+            filePath,
+          });
+        navigationMenuItems.push(extract.config);
+        errors.push(...extract.errors);
+        navigationMenuItemsFilePaths.push(relativePath);
+        break;
+      }
+      case ManifestEntityKey.PageLayouts: {
+        const extract = await extractManifestFromFile<PageLayoutConfig>({
+          appPath,
+          filePath,
+        });
+
+        const pageLayoutManifest: PageLayoutManifest = {
+          ...extract.config,
+        };
+
+        pageLayouts.push(pageLayoutManifest);
+        errors.push(...extract.errors);
+        pageLayoutsFilePaths.push(relativePath);
         break;
       }
       case ManifestEntityKey.PublicAssets: {
@@ -237,10 +311,13 @@ export const buildManifest = async (
         objects,
         fields,
         roles,
+        skills,
         logicFunctions,
         frontComponents,
         publicAssets,
-        sources: await computeSources(appPath, filePaths),
+        views,
+        navigationMenuItems,
+        pageLayouts,
       };
 
   const entityFilePaths: EntityFilePaths = {
@@ -248,9 +325,13 @@ export const buildManifest = async (
     objects: objectsFilePaths,
     fields: fieldsFilePaths,
     roles: rolesFilePaths,
+    skills: skillsFilePaths,
     logicFunctions: logicFunctionsFilePaths,
     frontComponents: frontComponentsFilePaths,
     publicAssets: publicAssetsFilePaths,
+    views: viewsFilePaths,
+    navigationMenuItems: navigationMenuItemsFilePaths,
+    pageLayouts: pageLayoutsFilePaths,
   };
 
   return { manifest, filePaths: entityFilePaths, errors };

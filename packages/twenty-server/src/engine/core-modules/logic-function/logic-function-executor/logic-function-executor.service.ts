@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import {
+  DEFAULT_APP_ACCESS_TOKEN_NAME,
   DEFAULT_API_KEY_NAME,
   DEFAULT_API_URL_NAME,
 } from 'twenty-shared/application';
@@ -83,16 +84,13 @@ export class LogicFunctionExecutorService {
       flatLogicFunction,
     });
 
-    const resultLogicFunction = await this.callWithTimeout({
-      callback: () =>
-        this.driver.execute({
-          flatLogicFunction,
-          flatApplication,
-          applicationUniversalIdentifier: flatApplication.universalIdentifier,
-          payload,
-          env: envVariables,
-        }),
-      timeoutMs: flatLogicFunction.timeoutSeconds * 1000,
+    const resultLogicFunction = await this.driver.execute({
+      flatLogicFunction,
+      flatApplication,
+      applicationUniversalIdentifier: flatApplication.universalIdentifier,
+      payload,
+      env: envVariables,
+      timeoutMs: flatLogicFunction.timeoutSeconds * 1_000,
     });
 
     await this.handleExecutionResult({
@@ -119,21 +117,6 @@ export class LogicFunctionExecutorService {
         LogicFunctionExecutionExceptionCode.RATE_LIMIT_EXCEEDED,
       );
     }
-  }
-
-  private async callWithTimeout<T>({
-    callback,
-    timeoutMs,
-  }: {
-    callback: () => Promise<T>;
-    timeoutMs: number;
-  }): Promise<T> {
-    return Promise.race([
-      callback(),
-      new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error('Execution timed out')), timeoutMs),
-      ),
-    ]);
   }
 
   private async getFlatEntitiesOrThrow({
@@ -197,7 +180,7 @@ export class LogicFunctionExecutorService {
     flatApplicationVariables: FlatApplicationVariable[];
   }) {
     const applicationAccessToken =
-      await this.applicationTokenService.generateApplicationToken({
+      await this.applicationTokenService.generateApplicationAccessToken({
         workspaceId,
         applicationId: flatApplication.id,
         expiresInSeconds: Math.max(
@@ -210,6 +193,7 @@ export class LogicFunctionExecutorService {
 
     return {
       [DEFAULT_API_URL_NAME]: baseUrl ?? '',
+      [DEFAULT_APP_ACCESS_TOKEN_NAME]: applicationAccessToken.token,
       [DEFAULT_API_KEY_NAME]: applicationAccessToken.token,
       ...buildEnvVar(flatApplicationVariables, this.secretEncryptionService),
     };

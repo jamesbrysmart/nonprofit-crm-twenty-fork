@@ -11,7 +11,7 @@ import { type ActivityTargetableObject } from '@/activities/types/ActivityTarget
 import { isAttachmentPreviewEnabledState } from '@/client-config/states/isAttachmentPreviewEnabledState';
 import { Modal } from '@/ui/layout/modal/components/Modal';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 
 import { ActivityList } from '@/activities/components/ActivityList';
 import { useHasPermissionFlag } from '@/settings/roles/hooks/useHasPermissionFlag';
@@ -20,8 +20,10 @@ import { ScrollWrapper } from '@/ui/utilities/scroll/components/ScrollWrapper';
 import { assertIsDefinedOrThrow } from 'twenty-shared/utils';
 import { IconDownload, IconX } from 'twenty-ui/display';
 import { IconButton } from 'twenty-ui/input';
-import { PermissionFlagType } from '~/generated-metadata/graphql';
-import { FeatureFlagKey } from '~/generated/graphql';
+import {
+  PermissionFlagType,
+  FeatureFlagKey,
+} from '~/generated-metadata/graphql';
 import { AttachmentRow } from './AttachmentRow';
 
 const DocumentViewer = lazy(() =>
@@ -133,7 +135,7 @@ export const AttachmentList = ({
   const [previewedAttachment, setPreviewedAttachment] =
     useState<Attachment | null>(null);
 
-  const isAttachmentPreviewEnabled = useRecoilValue(
+  const isAttachmentPreviewEnabled = useRecoilValueV2(
     isAttachmentPreviewEnabledState,
   );
 

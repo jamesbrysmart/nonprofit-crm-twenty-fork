@@ -29,8 +29,8 @@ import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { useSubscriptionStatus } from '@/workspace/hooks/useSubscriptionStatus';
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
+import { useSetRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilStateV2';
 import { useMemo, useState } from 'react';
-import { useSetRecoilState } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
 import {
   H2Title,
@@ -55,8 +55,8 @@ import {
   useCancelSwitchMeteredPriceMutation,
   useSwitchBillingPlanMutation,
   useSwitchSubscriptionIntervalMutation,
+  SubscriptionStatus,
 } from '~/generated-metadata/graphql';
-import { SubscriptionStatus } from '~/generated/graphql';
 import { beautifyExactDate } from '~/utils/date-utils';
 
 const SWITCH_BILLING_INTERVAL_TO_MONTHLY_MODAL_ID =
@@ -144,7 +144,7 @@ export const SettingsBillingSubscriptionInfo = ({
 
   const [cancelSwitchMeteredPrice] = useCancelSwitchMeteredPriceMutation();
 
-  const setCurrentWorkspace = useSetRecoilState(currentWorkspaceState);
+  const setCurrentWorkspace = useSetRecoilStateV2(currentWorkspaceState);
 
   const isTrialPeriod = subscriptionStatus === SubscriptionStatus.Trialing;
 

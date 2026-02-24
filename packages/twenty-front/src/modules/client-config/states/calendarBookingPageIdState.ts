@@ -1,6 +1,6 @@
-import { createState } from 'twenty-ui/utilities';
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
 
-export const calendarBookingPageIdState = createState<string | null>({
+export const calendarBookingPageIdState = createStateV2<string | null>({
   key: 'calendarBookingPageIdState',
   defaultValue: null,
 });

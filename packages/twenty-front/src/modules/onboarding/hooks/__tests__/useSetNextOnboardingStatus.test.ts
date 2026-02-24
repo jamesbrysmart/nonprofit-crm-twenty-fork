@@ -1,39 +1,69 @@
 import { act, renderHook } from '@testing-library/react';
-import { RecoilRoot, useRecoilState, useSetRecoilState } from 'recoil';
+import { createElement } from 'react';
+import { Provider as JotaiProvider } from 'jotai';
+import { RecoilRoot } from 'recoil';
 import { v4 } from 'uuid';
 
 import { currentUserState } from '@/auth/states/currentUserState';
+import { currentUserWorkspaceState } from '@/auth/states/currentUserWorkspaceState';
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { useSetNextOnboardingStatus } from '@/onboarding/hooks/useSetNextOnboardingStatus';
-import { OnboardingStatus, SubscriptionStatus } from '~/generated/graphql';
+import { useRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilStateV2';
+import { useSetRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilStateV2';
+import {
+  jotaiStore,
+  resetJotaiStore,
+} from '@/ui/utilities/state/jotai/jotaiStore';
+
+import {
+  OnboardingStatus,
+  PermissionFlagType,
+  SubscriptionStatus,
+} from '~/generated-metadata/graphql';
 import {
   mockCurrentWorkspace,
   mockedUserData,
 } from '~/testing/mock-data/users';
 
+const Wrapper = ({ children }: { children: React.ReactNode }) =>
+  createElement(
+    JotaiProvider,
+    { store: jotaiStore },
+    createElement(RecoilRoot, null, children),
+  );
+
 const renderHooks = (
   onboardingStatus: OnboardingStatus,
   withCurrentBillingSubscription: boolean,
   withOneWorkspaceMember = true,
+  permissionFlags = mockedUserData.currentUserWorkspace.permissionFlags,
 ) => {
   const { result } = renderHook(
     () => {
-      const [currentUser, setCurrentUser] = useRecoilState(currentUserState);
-      const setCurrentWorkspace = useSetRecoilState(currentWorkspaceState);
+      const [currentUser, setCurrentUser] = useRecoilStateV2(currentUserState);
+      const setCurrentUserWorkspace = useSetRecoilStateV2(
+        currentUserWorkspaceState,
+      );
+      const setCurrentWorkspace = useSetRecoilStateV2(currentWorkspaceState);
       const setNextOnboardingStatus = useSetNextOnboardingStatus();
       return {
         currentUser,
         setCurrentUser,
         setCurrentWorkspace,
+        setCurrentUserWorkspace,
         setNextOnboardingStatus,
       };
     },
     {
-      wrapper: RecoilRoot,
+      wrapper: Wrapper,
     },
   );
   act(() => {
     result.current.setCurrentUser({ ...mockedUserData, onboardingStatus });
+    result.current.setCurrentUserWorkspace({
+      ...mockedUserData.currentUserWorkspace,
+      permissionFlags,
+    });
     result.current.setCurrentWorkspace({
       ...mockCurrentWorkspace,
       currentBillingSubscription: withCurrentBillingSubscription
@@ -54,6 +84,10 @@ const renderHooks = (
 };
 
 describe('useSetNextOnboardingStatus', () => {
+  beforeEach(() => {
+    resetJotaiStore();
+  });
+
   it('should set next onboarding status for ProfileCreation', () => {
     const nextOnboardingStatus = renderHooks(
       OnboardingStatus.PROFILE_CREATION,
@@ -70,6 +104,16 @@ describe('useSetNextOnboardingStatus', () => {
       false,
     );
     expect(nextOnboardingStatus).toEqual(OnboardingStatus.COMPLETED);
+  });
+
+  it('should skip SyncEmail when account sync is disabled', () => {
+    const nextOnboardingStatus = renderHooks(
+      OnboardingStatus.PROFILE_CREATION,
+      false,
+      true,
+      [PermissionFlagType.WORKSPACE_MEMBERS],
+    );
+    expect(nextOnboardingStatus).toEqual(OnboardingStatus.INVITE_TEAM);
   });
 
   it('should set next onboarding status for SyncEmail', () => {

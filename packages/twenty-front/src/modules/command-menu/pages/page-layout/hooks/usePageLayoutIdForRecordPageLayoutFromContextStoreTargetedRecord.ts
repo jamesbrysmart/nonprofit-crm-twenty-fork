@@ -2,16 +2,16 @@ import { contextStoreCurrentObjectMetadataItemIdComponentState } from '@/context
 import { contextStoreTargetedRecordsRuleComponentState } from '@/context-store/states/contextStoreTargetedRecordsRuleComponentState';
 import { useObjectMetadataItemById } from '@/object-metadata/hooks/useObjectMetadataItemById';
 import { useRecordPageLayoutIdFromRecordStoreOrThrow } from '@/page-layout/hooks/useRecordPageLayoutIdFromRecordStoreOrThrow';
-import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
+import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
 import { isDefined } from 'twenty-shared/utils';
 
 export const usePageLayoutIdForRecordPageLayoutFromContextStoreTargetedRecord =
   () => {
-    const targetedRecordsRule = useRecoilComponentValue(
+    const targetedRecordsRule = useRecoilComponentValueV2(
       contextStoreTargetedRecordsRuleComponentState,
     );
 
-    const objectMetadataId = useRecoilComponentValue(
+    const objectMetadataId = useRecoilComponentValueV2(
       contextStoreCurrentObjectMetadataItemIdComponentState,
     );
 
@@ -32,10 +32,7 @@ export const usePageLayoutIdForRecordPageLayoutFromContextStoreTargetedRecord =
       throw new Error('Only one record should be selected');
     }
 
-    const recordId: string = targetedRecordsRule.selectedRecordIds[0];
-
     const { pageLayoutId } = useRecordPageLayoutIdFromRecordStoreOrThrow({
-      id: recordId,
       targetObjectNameSingular: objectMetadataItem.nameSingular,
     });
 

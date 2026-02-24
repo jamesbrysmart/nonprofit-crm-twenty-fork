@@ -1,6 +1,6 @@
-import { createState } from 'twenty-ui/utilities';
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
 
-export const lastShowPageRecordIdState = createState<string | null>({
+export const lastShowPageRecordIdState = createStateV2<string | null>({
   key: 'lastShowPageRecordIdState',
   defaultValue: null,
 });

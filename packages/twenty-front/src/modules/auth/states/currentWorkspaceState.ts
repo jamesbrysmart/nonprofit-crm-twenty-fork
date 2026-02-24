@@ -1,9 +1,9 @@
-import { createState } from 'twenty-ui/utilities';
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
 import {
   type Application,
   type Role,
   type Workspace,
-} from '~/generated/graphql';
+} from '~/generated-metadata/graphql';
 
 export type CurrentWorkspace = Pick<
   Workspace,
@@ -38,12 +38,16 @@ export type CurrentWorkspace = Pick<
   | 'smartModel'
   | 'aiAdditionalInstructions'
   | 'editableProfileFields'
+  | 'autoEnableNewAiModels'
+  | 'disabledAiModelIds'
+  | 'enabledAiModelIds'
+  | 'useRecommendedModels'
 > & {
   defaultRole?: Omit<Role, 'workspaceMembers' | 'agents' | 'apiKeys'> | null;
   workspaceCustomApplication: Pick<Application, 'id'> | null;
 };
 
-export const currentWorkspaceState = createState<CurrentWorkspace | null>({
+export const currentWorkspaceState = createStateV2<CurrentWorkspace | null>({
   key: 'currentWorkspaceState',
   defaultValue: null,
 });

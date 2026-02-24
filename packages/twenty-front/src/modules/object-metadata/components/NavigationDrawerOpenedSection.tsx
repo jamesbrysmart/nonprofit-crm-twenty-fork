@@ -9,7 +9,7 @@ import { CoreObjectNameSingular } from '@/object-metadata/types/CoreObjectNameSi
 import { useIsPrefetchLoading } from '@/prefetch/hooks/useIsPrefetchLoading';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 import { useLingui } from '@lingui/react/macro';
-import { FeatureFlagKey } from '~/generated/graphql';
+import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 const WORKFLOW_OBJECTS_IN_SIDEBAR = [
   CoreObjectNameSingular.Workflow,
@@ -29,8 +29,8 @@ export const NavigationDrawerOpenedSection = () => {
   const { workspaceFavoritesObjectMetadataItems } = useWorkspaceFavorites();
   const { workspaceNavigationMenuItemsObjectMetadataItems } =
     useWorkspaceNavigationMenuItems();
-  const isNavigationMenuItemEnabled = useIsFeatureEnabled(
-    FeatureFlagKey.IS_NAVIGATION_MENU_ITEM_ENABLED,
+  const isNavigationMenuItemEditingEnabled = useIsFeatureEnabled(
+    FeatureFlagKey.IS_NAVIGATION_MENU_ITEM_EDITING_ENABLED,
   );
 
   const {
@@ -52,7 +52,7 @@ export const NavigationDrawerOpenedSection = () => {
     return;
   }
 
-  const workspaceItemsToExclude = isNavigationMenuItemEnabled
+  const workspaceItemsToExclude = isNavigationMenuItemEditingEnabled
     ? workspaceNavigationMenuItemsObjectMetadataItems
     : workspaceFavoritesObjectMetadataItems;
 

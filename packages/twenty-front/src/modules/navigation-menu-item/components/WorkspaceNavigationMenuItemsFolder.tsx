@@ -7,33 +7,39 @@ import { isDefined } from 'twenty-shared/utils';
 
 import { useIsDropDisabledForSection } from '@/navigation-menu-item/hooks/useIsDropDisabledForSection';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { IconFolder, IconFolderOpen } from 'twenty-ui/display';
+import { IconChevronDown, IconChevronRight, useIcons } from 'twenty-ui/display';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
 import { useIsMobile } from 'twenty-ui/utilities';
 
 import { NavigationMenuItemDroppable } from '@/navigation-menu-item/components/NavigationMenuItemDroppable';
 import { NavigationMenuItemIcon } from '@/navigation-menu-item/components/NavigationMenuItemIcon';
 import { WorkspaceNavigationMenuItemFolderDragClone } from '@/navigation-menu-item/components/WorkspaceNavigationMenuItemFolderDragClone';
-import { NAVIGATION_MENU_ITEM_DROPPABLE_IDS } from '@/navigation-menu-item/constants/NavigationMenuItemDroppableIds';
+import { FOLDER_ICON_DEFAULT } from '@/navigation-menu-item/constants/FolderIconDefault';
+import { NavigationMenuItemDroppableIds } from '@/navigation-menu-item/constants/NavigationMenuItemDroppableIds';
+import { NavigationMenuItemType } from '@/navigation-menu-item/constants/NavigationMenuItemType';
 import { NavigationMenuItemDragContext } from '@/navigation-menu-item/contexts/NavigationMenuItemDragContext';
 import { type NavigationMenuItemClickParams } from '@/navigation-menu-item/hooks/useWorkspaceSectionItems';
-import { openNavigationMenuItemFolderIdsState } from '@/navigation-menu-item/states/openNavigationMenuItemFolderIdsState';
+import { openNavigationMenuItemFolderIdsStateV2 } from '@/navigation-menu-item/states/openNavigationMenuItemFolderIdsStateV2';
 import { getNavigationMenuItemIconColors } from '@/navigation-menu-item/utils/getNavigationMenuItemIconColors';
 import { getNavigationMenuItemSecondaryLabel } from '@/navigation-menu-item/utils/getNavigationMenuItemSecondaryLabel';
 import { getObjectMetadataForNavigationMenuItem } from '@/navigation-menu-item/utils/getObjectMetadataForNavigationMenuItem';
 import { isLocationMatchingNavigationMenuItem } from '@/navigation-menu-item/utils/isLocationMatchingNavigationMenuItem';
 import { type ProcessedNavigationMenuItem } from '@/navigation-menu-item/utils/sortNavigationMenuItems';
 import { objectMetadataItemsState } from '@/object-metadata/states/objectMetadataItemsState';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 import { DraggableItem } from '@/ui/layout/draggable-list/components/DraggableItem';
 import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { NavigationDrawerItemsCollapsableContainer } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItemsCollapsableContainer';
 import { NavigationDrawerSubItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSubItem';
-import { currentNavigationMenuItemFolderIdState } from '@/ui/navigation/navigation-drawer/states/currentNavigationMenuItemFolderIdState';
+import { currentNavigationMenuItemFolderIdStateV2 } from '@/ui/navigation/navigation-drawer/states/currentNavigationMenuItemFolderIdStateV2';
 import { getNavigationSubItemLeftAdornment } from '@/ui/navigation/navigation-drawer/utils/getNavigationSubItemLeftAdornment';
+import { useRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilStateV2';
+import { useSetRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilStateV2';
 import { coreViewsState } from '@/views/states/coreViewState';
 import { ViewKey } from '@/views/types/ViewKey';
 import { convertCoreViewToView } from '@/views/utils/convertCoreViewToView';
+import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
+import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 const StyledFolderContainer = styled.div<{ $isSelectedInEditMode: boolean }>`
   border: ${({ theme, $isSelectedInEditMode }) =>
@@ -46,6 +52,9 @@ const StyledFolderContainer = styled.div<{ $isSelectedInEditMode: boolean }>`
 const StyledFolderDroppableContent = styled.div<{
   $compact: boolean;
 }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.betweenSiblingsGap};
   padding-bottom: ${({ theme, $compact }) => ($compact ? 0 : theme.spacing(2))};
 `;
 
@@ -58,6 +67,7 @@ const StyledFolderExpandableWrapper = styled.div`
 type WorkspaceNavigationMenuItemsFolderProps = {
   folderId: string;
   folderName: string;
+  folderIconKey?: string | null;
   navigationMenuItems: ProcessedNavigationMenuItem[];
   isGroup: boolean;
   isEditMode?: boolean;
@@ -71,6 +81,7 @@ type WorkspaceNavigationMenuItemsFolderProps = {
 export const WorkspaceNavigationMenuItemsFolder = ({
   folderId,
   folderName,
+  folderIconKey,
   navigationMenuItems,
   isGroup,
   isEditMode = false,
@@ -81,9 +92,14 @@ export const WorkspaceNavigationMenuItemsFolder = ({
   isDragging = false,
 }: WorkspaceNavigationMenuItemsFolderProps) => {
   const theme = useTheme();
+  const { getIcon } = useIcons();
+  const isNavigationMenuItemEditingEnabled = useIsFeatureEnabled(
+    FeatureFlagKey.IS_NAVIGATION_MENU_ITEM_EDITING_ENABLED,
+  );
   const iconColors = getNavigationMenuItemIconColors(theme);
-  const objectMetadataItems = useRecoilValue(objectMetadataItemsState);
-  const coreViews = useRecoilValue(coreViewsState);
+  const FolderIcon = getIcon(folderIconKey ?? FOLDER_ICON_DEFAULT);
+  const objectMetadataItems = useRecoilValueV2(objectMetadataItemsState);
+  const coreViews = useRecoilValueV2(coreViewsState);
   const views = coreViews.map(convertCoreViewToView);
   const location = useLocation();
   const navigate = useNavigate();
@@ -92,10 +108,10 @@ export const WorkspaceNavigationMenuItemsFolder = ({
   const isMobile = useIsMobile();
 
   const [openNavigationMenuItemFolderIds, setOpenNavigationMenuItemFolderIds] =
-    useRecoilState(openNavigationMenuItemFolderIdsState);
+    useRecoilStateV2(openNavigationMenuItemFolderIdsStateV2);
 
-  const setCurrentFolderId = useSetRecoilState(
-    currentNavigationMenuItemFolderIdState,
+  const setCurrentFolderId = useSetRecoilStateV2(
+    currentNavigationMenuItemFolderIdStateV2,
   );
 
   const isOpen = openNavigationMenuItemFolderIds.includes(folderId);
@@ -113,7 +129,9 @@ export const WorkspaceNavigationMenuItemsFolder = ({
 
     if (!isOpen) {
       const firstNonLinkItem = navigationMenuItems.find(
-        (item) => item.itemType !== 'link' && isNonEmptyString(item.link),
+        (item) =>
+          item.itemType !== NavigationMenuItemType.LINK &&
+          isNonEmptyString(item.link),
       );
       if (isDefined(firstNonLinkItem?.link)) {
         navigate(firstNonLinkItem.link);
@@ -139,18 +157,35 @@ export const WorkspaceNavigationMenuItemsFolder = ({
     <StyledFolderContainer $isSelectedInEditMode={isSelectedInEditMode}>
       <NavigationDrawerItemsCollapsableContainer isGroup={isGroup}>
         <NavigationMenuItemDroppable
-          droppableId={`${NAVIGATION_MENU_ITEM_DROPPABLE_IDS.WORKSPACE_FOLDER_HEADER_PREFIX}${folderId}`}
+          droppableId={`${NavigationMenuItemDroppableIds.WORKSPACE_FOLDER_HEADER_PREFIX}${folderId}`}
           isWorkspaceSection={true}
         >
           <NavigationDrawerItem
             label={folderName}
-            Icon={isOpen ? IconFolderOpen : IconFolder}
-            iconBackgroundColor={iconColors.folder}
+            Icon={FolderIcon}
+            iconBackgroundColor={
+              isNavigationMenuItemEditingEnabled ? iconColors.folder : undefined
+            }
             onClick={handleClick}
             className="navigation-drawer-item"
             triggerEvent="CLICK"
             preventCollapseOnMobile={isMobile}
             isDragging={isDragging}
+            rightOptions={
+              isOpen ? (
+                <IconChevronDown
+                  size={theme.icon.size.sm}
+                  stroke={theme.icon.stroke.sm}
+                  color={theme.font.color.tertiary}
+                />
+              ) : (
+                <IconChevronRight
+                  size={theme.icon.size.sm}
+                  stroke={theme.icon.stroke.sm}
+                  color={theme.font.color.tertiary}
+                />
+              )
+            }
           />
         </NavigationMenuItemDroppable>
 
@@ -162,7 +197,7 @@ export const WorkspaceNavigationMenuItemsFolder = ({
             containAnimation
           >
             <Droppable
-              droppableId={`${NAVIGATION_MENU_ITEM_DROPPABLE_IDS.WORKSPACE_FOLDER_PREFIX}${folderId}`}
+              droppableId={`${NavigationMenuItemDroppableIds.WORKSPACE_FOLDER_PREFIX}${folderId}`}
               isDropDisabled={folderContentDropDisabled}
               ignoreContainerClipping
               renderClone={(provided, snapshot, rubric) => (
@@ -190,8 +225,10 @@ export const WorkspaceNavigationMenuItemsFolder = ({
                 >
                   {navigationMenuItems.map((navigationMenuItem, index) => {
                     const objectMetadataItem =
-                      navigationMenuItem.itemType === 'view' ||
-                      navigationMenuItem.itemType === 'record'
+                      navigationMenuItem.itemType ===
+                        NavigationMenuItemType.VIEW ||
+                      navigationMenuItem.itemType ===
+                        NavigationMenuItemType.RECORD
                         ? getObjectMetadataForNavigationMenuItem(
                             navigationMenuItem,
                             objectMetadataItems,
@@ -201,7 +238,8 @@ export const WorkspaceNavigationMenuItemsFolder = ({
                     const handleEditModeClick =
                       isEditMode &&
                       isDefined(onNavigationMenuItemClick) &&
-                      (navigationMenuItem.itemType === 'link' ||
+                      (navigationMenuItem.itemType ===
+                        NavigationMenuItemType.LINK ||
                         isDefined(objectMetadataItem))
                         ? () =>
                             onNavigationMenuItemClick({

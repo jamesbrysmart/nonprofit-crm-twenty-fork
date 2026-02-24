@@ -6,11 +6,13 @@ import { FavoritesDragContext } from '@/favorites/contexts/FavoritesDragContext'
 import { useDeleteFavorite } from '@/favorites/hooks/useDeleteFavorite';
 import { useDeleteFavoriteFolder } from '@/favorites/hooks/useDeleteFavoriteFolder';
 import { useRenameFavoriteFolder } from '@/favorites/hooks/useRenameFavoriteFolder';
-import { openFavoriteFolderIdsState } from '@/favorites/states/openFavoriteFolderIdsState';
+import { openFavoriteFolderIdsStateV2 } from '@/favorites/states/openFavoriteFolderIdsStateV2';
+import { useRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilStateV2';
 import { getFavoriteSecondaryLabel } from '@/favorites/utils/getFavoriteSecondaryLabel';
 import { isLocationMatchingFavorite } from '@/favorites/utils/isLocationMatchingFavorite';
 import { type ProcessedFavorite } from '@/favorites/utils/sortFavorites';
 import { objectMetadataItemsState } from '@/object-metadata/states/objectMetadataItemsState';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 import { DraggableItem } from '@/ui/layout/draggable-list/components/DraggableItem';
 import { useCloseDropdown } from '@/ui/layout/dropdown/hooks/useCloseDropdown';
 import { isDropdownOpenComponentState } from '@/ui/layout/dropdown/states/isDropdownOpenComponentState';
@@ -21,15 +23,15 @@ import { NavigationDrawerInput } from '@/ui/navigation/navigation-drawer/compone
 import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { NavigationDrawerItemsCollapsableContainer } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItemsCollapsableContainer';
 import { NavigationDrawerSubItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSubItem';
-import { currentFavoriteFolderIdState } from '@/ui/navigation/navigation-drawer/states/currentFavoriteFolderIdState';
+import { currentFavoriteFolderIdStateV2 } from '@/ui/navigation/navigation-drawer/states/currentFavoriteFolderIdStateV2';
+import { useSetRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilStateV2';
 import { getNavigationSubItemLeftAdornment } from '@/ui/navigation/navigation-drawer/utils/getNavigationSubItemLeftAdornment';
-import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
+import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
 import { Droppable } from '@hello-pangea/dnd';
 import { useLingui } from '@lingui/react/macro';
 import { useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { IconFolder, IconFolderOpen, IconHeartOff } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
@@ -49,7 +51,7 @@ export const CurrentWorkspaceMemberFavorites = ({
   isGroup,
 }: CurrentWorkspaceMemberFavoritesProps) => {
   const { t } = useLingui();
-  const objectMetadataItems = useRecoilValue(objectMetadataItemsState);
+  const objectMetadataItems = useRecoilValueV2(objectMetadataItemsState);
   const currentPath = useLocation().pathname;
   const currentViewPath = useLocation().pathname + useLocation().search;
   const { isDragging } = useContext(FavoritesDragContext);
@@ -62,11 +64,13 @@ export const CurrentWorkspaceMemberFavorites = ({
 
   const isMobile = useIsMobile();
 
-  const [openFavoriteFolderIds, setOpenFavoriteFolderIds] = useRecoilState(
-    openFavoriteFolderIdsState,
+  const [openFavoriteFolderIds, setOpenFavoriteFolderIds] = useRecoilStateV2(
+    openFavoriteFolderIdsStateV2,
   );
 
-  const setCurrentFolderId = useSetRecoilState(currentFavoriteFolderIdState);
+  const setCurrentFolderId = useSetRecoilStateV2(
+    currentFavoriteFolderIdStateV2,
+  );
 
   const isOpen = openFavoriteFolderIds.includes(folder.folderId);
 
@@ -91,7 +95,7 @@ export const CurrentWorkspaceMemberFavorites = ({
 
   const dropdownId = `favorite-folder-edit-${folder.folderId}`;
 
-  const isDropdownOpenComponent = useRecoilComponentValue(
+  const isDropdownOpenComponent = useRecoilComponentValueV2(
     isDropdownOpenComponentState,
     dropdownId,
   );
@@ -158,7 +162,7 @@ export const CurrentWorkspaceMemberFavorites = ({
     />
   );
 
-  const isModalOpened = useRecoilComponentValue(
+  const isModalOpened = useRecoilComponentValueV2(
     isModalOpenedComponentState,
     modalId,
   );

@@ -1,7 +1,7 @@
-import { type ApiConfig } from '~/generated/graphql';
-import { createState } from 'twenty-ui/utilities';
+import { type ApiConfig } from '~/generated-metadata/graphql';
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
 
-export const apiConfigState = createState<ApiConfig | null>({
+export const apiConfigState = createStateV2<ApiConfig | null>({
   key: 'apiConfigState',
   defaultValue: null,
 });

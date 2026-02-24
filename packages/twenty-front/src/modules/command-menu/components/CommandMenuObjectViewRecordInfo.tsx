@@ -2,31 +2,39 @@ import { useLingui } from '@lingui/react/macro';
 import { OverflowingTextWithTooltip } from 'twenty-ui/display';
 
 import { CommandMenuPageInfoLayout } from '@/command-menu/components/CommandMenuPageInfoLayout';
-import { useSelectedNavigationMenuItemEditData } from '@/command-menu/pages/navigation-menu-item/hooks/useSelectedNavigationMenuItemEditData';
 import { NavigationMenuItemIcon } from '@/navigation-menu-item/components/NavigationMenuItemIcon';
-import { ViewKey } from '@/views/types/ViewKey';
+import { NavigationMenuItemType } from '@/navigation-menu-item/constants/NavigationMenuItemType';
+import { useSelectedNavigationMenuItemEditItem } from '@/navigation-menu-item/hooks/useSelectedNavigationMenuItemEditItem';
+import { useSelectedNavigationMenuItemEditItemLabel } from '@/navigation-menu-item/hooks/useSelectedNavigationMenuItemEditItemLabel';
 
 export const CommandMenuObjectViewRecordInfo = () => {
   const { t } = useLingui();
-  const { processedItem, selectedItemLabel } =
-    useSelectedNavigationMenuItemEditData();
+  const { selectedItem } = useSelectedNavigationMenuItemEditItem();
+  const { selectedItemLabel } = useSelectedNavigationMenuItemEditItemLabel();
+
+  const processedItem =
+    selectedItem && selectedItem.itemType !== NavigationMenuItemType.FOLDER
+      ? selectedItem
+      : undefined;
 
   if (!processedItem || !selectedItemLabel) {
     return null;
   }
 
-  const isViewOrRecord =
-    processedItem.itemType === 'view' || processedItem.itemType === 'record';
+  const isViewOrRecord = [
+    NavigationMenuItemType.VIEW,
+    NavigationMenuItemType.RECORD,
+  ].includes(processedItem.itemType);
+
   if (!isViewOrRecord) {
     return null;
   }
 
-  const label =
-    processedItem.itemType === 'record'
+  const label = isViewOrRecord
+    ? processedItem.itemType === NavigationMenuItemType.RECORD
       ? t`record`
-      : processedItem.viewKey === ViewKey.Index
-        ? t`object`
-        : t`view`;
+      : t`view`
+    : t`object`;
 
   return (
     <CommandMenuPageInfoLayout

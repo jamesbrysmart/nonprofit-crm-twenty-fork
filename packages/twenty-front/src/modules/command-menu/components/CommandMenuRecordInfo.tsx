@@ -7,15 +7,16 @@ import { useIsRecordFieldReadOnly } from '@/object-record/read-only/hooks/useIsR
 import { FieldContext } from '@/object-record/record-field/ui/contexts/FieldContext';
 import { useRecordShowContainerActions } from '@/object-record/record-show/hooks/useRecordShowContainerActions';
 import { useRecordShowPage } from '@/object-record/record-show/hooks/useRecordShowPage';
-import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
-import { recordStoreIdentifierFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreIdentifierSelector';
+import { recordStoreFamilySelectorV2 } from '@/object-record/record-store/states/selectors/recordStoreFamilySelectorV2';
+import { recordStoreIdentifierFamilySelectorV2 } from '@/object-record/record-store/states/selectors/recordStoreIdentifierFamilySelectorV2';
 import { RecordTitleCell } from '@/object-record/record-title-cell/components/RecordTitleCell';
 import { RecordTitleCellContainerType } from '@/object-record/record-title-cell/types/RecordTitleCellContainerType';
-import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
+import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 import { Trans } from '@lingui/react/macro';
 import { isNonEmptyString } from '@sniptt/guards';
-import { useRecoilValue } from 'recoil';
+import { useFamilySelectorValueV2 } from '@/ui/utilities/state/jotai/hooks/useFamilySelectorValueV2';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 import { Avatar } from 'twenty-ui/display';
 import {
   FeatureFlagKey,
@@ -30,15 +31,15 @@ export const CommandMenuRecordInfo = ({
 }: {
   commandMenuPageInstanceId: string;
 }) => {
-  const viewableRecordNameSingular = useRecoilComponentValue(
+  const viewableRecordNameSingular = useRecoilComponentValueV2(
     viewableRecordNameSingularComponentState,
     commandMenuPageInstanceId,
   );
-  const allowRequestsToTwentyIcons = useRecoilValue(
+  const allowRequestsToTwentyIcons = useRecoilValueV2(
     allowRequestsToTwentyIconsState,
   );
 
-  const viewableRecordId = useRecoilComponentValue(
+  const viewableRecordId = useRecoilComponentValueV2(
     viewableRecordIdComponentState,
     commandMenuPageInstanceId,
   );
@@ -48,26 +49,25 @@ export const CommandMenuRecordInfo = ({
     viewableRecordId!,
   );
 
-  const recordCreatedAt = useRecoilValue<string | null>(
-    recordStoreFamilySelector({
-      recordId: objectRecordId,
-      fieldName: 'createdAt',
-    }),
-  );
+  const recordCreatedAt = useFamilySelectorValueV2(
+    recordStoreFamilySelectorV2,
+    { recordId: objectRecordId, fieldName: 'createdAt' },
+  ) as string | null;
 
   const isFilesFieldMigrated = useIsFeatureEnabled(
     FeatureFlagKey.IS_FILES_FIELD_MIGRATED,
   );
 
-  const recordIdentifier = useRecoilValue(
-    recordStoreIdentifierFamilySelector({
+  const recordIdentifier = useFamilySelectorValueV2(
+    recordStoreIdentifierFamilySelectorV2,
+    {
       recordId: objectRecordId,
       allowRequestsToTwentyIcons,
       isFilesFieldMigrated,
-    }),
+    },
   );
 
-  const { localeCatalog } = useRecoilValue(dateLocaleState);
+  const { localeCatalog } = useRecoilValueV2(dateLocaleState);
   const beautifiedCreatedAt = isNonEmptyString(recordCreatedAt)
     ? beautifyPastDateRelativeToNow(recordCreatedAt, localeCatalog)
     : '';

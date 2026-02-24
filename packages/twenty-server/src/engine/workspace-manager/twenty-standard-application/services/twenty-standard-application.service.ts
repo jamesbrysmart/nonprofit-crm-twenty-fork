@@ -8,7 +8,7 @@ import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twent
 import { MetadataFlatEntity } from 'src/engine/metadata-modules/flat-entity/types/metadata-flat-entity.type';
 import { findFlatEntityByUniversalIdentifier } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier.util';
 import { getMetadataFlatEntityMapsKey } from 'src/engine/metadata-modules/flat-entity/utils/get-metadata-flat-entity-maps-key.util';
-import { getSubFlatEntityMapsByApplicationIdOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/get-sub-flat-entity-maps-by-application-id-or-throw.util';
+import { getSubFlatEntityMapsByApplicationIdsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/get-sub-flat-entity-maps-by-application-ids-or-throw.util';
 import { FlatView } from 'src/engine/metadata-modules/flat-view/types/flat-view.type';
 import { GlobalWorkspaceOrmManager } from 'src/engine/twenty-orm/global-workspace-datasource/global-workspace-orm.manager';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
@@ -20,6 +20,7 @@ import { WorkspaceMigrationValidateBuildAndRunService } from 'src/engine/workspa
 import { FromToAllUniversalFlatEntityMaps } from 'src/engine/workspace-manager/workspace-migration/types/workspace-migration-orchestrator.type';
 import { FavoriteWorkspaceEntity } from 'src/modules/favorite/standard-objects/favorite.workspace-entity';
 
+// TODO completely deprecate this file once we've created the twenty-standard twenty-app manifest
 @Injectable()
 export class TwentyStandardApplicationService {
   constructor(
@@ -94,10 +95,10 @@ export class TwentyStandardApplicationService {
       const fromFlatEntityMaps =
         fromTwentyStandardAllFlatEntityMaps[flatEntityMapsKey];
       const fromTo = {
-        from: getSubFlatEntityMapsByApplicationIdOrThrow<
+        from: getSubFlatEntityMapsByApplicationIdsOrThrow<
           MetadataFlatEntity<typeof metadataName>
         >({
-          applicationId: twentyStandardFlatApplication.id,
+          applicationIds: [twentyStandardFlatApplication.id],
           flatEntityMaps: fromFlatEntityMaps,
         }),
         to: toTwentyStandardAllFlatEntityMaps[flatEntityMapsKey],
@@ -113,19 +114,19 @@ export class TwentyStandardApplicationService {
           buildOptions: {
             isSystemBuild: true,
             inferDeletionFromMissingEntities: true,
+            applicationUniversalIdentifier:
+              twentyStandardFlatApplication.universalIdentifier,
           },
           fromToAllFlatEntityMaps,
           workspaceId,
           additionalCacheDataMaps: {
             featureFlagsMap,
           },
-          applicationUniversalIdentifier:
-            twentyStandardFlatApplication.universalIdentifier,
           idByUniversalIdentifierByMetadataName,
         },
       );
 
-    if (isDefined(validateAndBuildResult)) {
+    if (validateAndBuildResult.status === 'fail') {
       throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
         'Multiple validation errors occurred while synchronizing twenty-standard application',

@@ -1,15 +1,16 @@
-import { useRecoilValue } from 'recoil';
 import { type NavigationMenuItem } from '~/generated-metadata/graphql';
 
+import { FOLDER_ICON_DEFAULT } from '@/navigation-menu-item/constants/FolderIconDefault';
+import { NavigationMenuItemType } from '@/navigation-menu-item/constants/NavigationMenuItemType';
+import { type ProcessedNavigationMenuItem } from '@/navigation-menu-item/types/processed-navigation-menu-item';
 import { getObjectMetadataForNavigationMenuItem } from '@/navigation-menu-item/utils/getObjectMetadataForNavigationMenuItem';
 import { isNavigationMenuItemFolder } from '@/navigation-menu-item/utils/isNavigationMenuItemFolder';
-import { NAVIGATION_MENU_ITEM_TYPE } from '@/navigation-menu-item/types/navigation-menu-item-type';
-import { type ProcessedNavigationMenuItem } from '@/navigation-menu-item/types/processed-navigation-menu-item';
-import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { objectMetadataItemsState } from '@/object-metadata/states/objectMetadataItemsState';
+import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { coreViewsState } from '@/views/states/coreViewState';
 import { convertCoreViewToView } from '@/views/utils/convertCoreViewToView';
 import { isDefined } from 'twenty-shared/utils';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 
 import { useNavigationMenuItemsByFolder } from './useNavigationMenuItemsByFolder';
 import { usePrefetchedNavigationMenuItemsData } from './usePrefetchedNavigationMenuItemsData';
@@ -18,7 +19,8 @@ import { useSortedNavigationMenuItems } from './useSortedNavigationMenuItems';
 export type FlatWorkspaceItem =
   | ProcessedNavigationMenuItem
   | (NavigationMenuItem & {
-      itemType: typeof NAVIGATION_MENU_ITEM_TYPE.FOLDER;
+      itemType: NavigationMenuItemType.FOLDER;
+      Icon: string;
     });
 
 export type NavigationMenuItemClickParams = {
@@ -32,8 +34,8 @@ export const useWorkspaceSectionItems = (): FlatWorkspaceItem[] => {
   const { workspaceNavigationMenuItemsSorted } = useSortedNavigationMenuItems();
   const { workspaceNavigationMenuItemsByFolder } =
     useNavigationMenuItemsByFolder();
-  const coreViews = useRecoilValue(coreViewsState);
-  const objectMetadataItems = useRecoilValue(objectMetadataItemsState);
+  const coreViews = useRecoilValueV2(coreViewsState);
+  const objectMetadataItems = useRecoilValueV2(objectMetadataItemsState);
 
   const views = coreViews.map(convertCoreViewToView);
 
@@ -56,13 +58,17 @@ export const useWorkspaceSectionItems = (): FlatWorkspaceItem[] => {
     FlatWorkspaceItem[]
   >((acc, item) => {
     if (isNavigationMenuItemFolder(item)) {
-      acc.push({ ...item, itemType: NAVIGATION_MENU_ITEM_TYPE.FOLDER });
+      acc.push({
+        ...item,
+        itemType: NavigationMenuItemType.FOLDER,
+        Icon: item.icon ?? FOLDER_ICON_DEFAULT,
+      });
     } else {
       const processedItem = processedObjectViewsById.get(item.id);
       if (!isDefined(processedItem)) {
         return acc;
       }
-      if (processedItem.itemType === NAVIGATION_MENU_ITEM_TYPE.LINK) {
+      if (processedItem.itemType === NavigationMenuItemType.LINK) {
         acc.push(processedItem);
       } else {
         const objectMetadataItem = getObjectMetadataForNavigationMenuItem(
@@ -79,7 +85,7 @@ export const useWorkspaceSectionItems = (): FlatWorkspaceItem[] => {
   }, []);
 
   return flatItems.flatMap((item) =>
-    item.itemType === NAVIGATION_MENU_ITEM_TYPE.FOLDER
+    item.itemType === NavigationMenuItemType.FOLDER
       ? [item, ...(folderChildrenById.get(item.id) ?? [])]
       : [item],
   );

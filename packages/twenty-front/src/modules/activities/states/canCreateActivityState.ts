@@ -1,5 +1,5 @@
-import { createState } from 'twenty-ui/utilities';
-export const canCreateActivityState = createState<boolean>({
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
+export const canCreateActivityState = createStateV2<boolean>({
   key: 'canCreateActivityState',
   defaultValue: false,
 });

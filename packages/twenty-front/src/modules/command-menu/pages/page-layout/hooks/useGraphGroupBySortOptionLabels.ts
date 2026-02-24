@@ -2,17 +2,17 @@ import { getFieldLabelWithSubField } from '@/command-menu/pages/page-layout/util
 import { getSortLabelSuffixForFieldType } from '@/command-menu/pages/page-layout/utils/getSortLabelSuffixForFieldType';
 import { objectMetadataItemsState } from '@/object-metadata/states/objectMetadataItemsState';
 import { t } from '@lingui/core/macro';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 import { type CompositeFieldSubFieldName } from 'twenty-shared/types';
 import { assertUnreachable } from 'twenty-shared/utils';
-import { GraphOrderBy } from '~/generated/graphql';
+import { GraphOrderBy } from '~/generated-metadata/graphql';
 
 export const useGraphGroupBySortOptionLabels = ({
   objectMetadataId,
 }: {
   objectMetadataId: string;
 }) => {
-  const objectMetadataItems = useRecoilValue(objectMetadataItemsState);
+  const objectMetadataItems = useRecoilValueV2(objectMetadataItemsState);
 
   const objectMetadataItem = objectMetadataItems.find(
     (objectMetadataItem) => objectMetadataItem.id === objectMetadataId,

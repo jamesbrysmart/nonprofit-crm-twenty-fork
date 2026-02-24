@@ -1,12 +1,12 @@
+import { useCreatePageLayoutTab } from '@/page-layout/hooks/useCreatePageLayoutTab';
 import { pageLayoutCurrentLayoutsComponentState } from '@/page-layout/states/pageLayoutCurrentLayoutsComponentState';
 import { pageLayoutDraftComponentState } from '@/page-layout/states/pageLayoutDraftComponentState';
 import { activeTabIdComponentState } from '@/ui/layout/tab-list/states/activeTabIdComponentState';
-import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
-import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
+import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
+import { useSetRecoilComponentStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilComponentStateV2';
 import { act, renderHook } from '@testing-library/react';
-import { useSetRecoilState } from 'recoil';
-import { PageLayoutType } from '~/generated/graphql';
-import { useCreatePageLayoutTab } from '@/page-layout/hooks/useCreatePageLayoutTab';
+import { useSetAtom } from 'jotai';
+import { PageLayoutType } from '~/generated-metadata/graphql';
 import {
   PAGE_LAYOUT_TEST_INSTANCE_ID,
   PageLayoutTestWrapper,
@@ -28,15 +28,15 @@ describe('useCreatePageLayoutTab', () => {
     const { result } = renderHook(
       () => ({
         createTab: useCreatePageLayoutTab(PAGE_LAYOUT_TEST_INSTANCE_ID),
-        pageLayoutDraft: useRecoilComponentValue(
+        pageLayoutDraft: useRecoilComponentValueV2(
           pageLayoutDraftComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         ),
-        pageLayoutCurrentLayouts: useRecoilComponentValue(
+        pageLayoutCurrentLayouts: useRecoilComponentValueV2(
           pageLayoutCurrentLayoutsComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         ),
-        activeTabId: useSetRecoilState(
+        activeTabId: useSetAtom(
           activeTabIdComponentState.atomFamily({
             instanceId: `${PAGE_LAYOUT_TEST_INSTANCE_ID}-tab-list`,
           }),
@@ -70,7 +70,7 @@ describe('useCreatePageLayoutTab', () => {
     const { result } = renderHook(
       () => ({
         createTab: useCreatePageLayoutTab(PAGE_LAYOUT_TEST_INSTANCE_ID),
-        pageLayoutDraft: useRecoilComponentValue(
+        pageLayoutDraft: useRecoilComponentValueV2(
           pageLayoutDraftComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         ),
@@ -98,7 +98,7 @@ describe('useCreatePageLayoutTab', () => {
     const { result } = renderHook(
       () => ({
         createTab: useCreatePageLayoutTab(PAGE_LAYOUT_TEST_INSTANCE_ID),
-        pageLayoutDraft: useRecoilComponentValue(
+        pageLayoutDraft: useRecoilComponentValueV2(
           pageLayoutDraftComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         ),
@@ -134,7 +134,7 @@ describe('useCreatePageLayoutTab', () => {
     const { result } = renderHook(
       () => ({
         createTab: useCreatePageLayoutTab(PAGE_LAYOUT_TEST_INSTANCE_ID),
-        pageLayoutCurrentLayouts: useRecoilComponentValue(
+        pageLayoutCurrentLayouts: useRecoilComponentValueV2(
           pageLayoutCurrentLayoutsComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         ),
@@ -174,7 +174,7 @@ describe('useCreatePageLayoutTab', () => {
 
     const { result } = renderHook(
       () => {
-        const getActiveTabId = useRecoilComponentValue(
+        const getActiveTabId = useRecoilComponentValueV2(
           activeTabIdComponentState,
           `${PAGE_LAYOUT_TEST_INSTANCE_ID}-tab-list`,
         );
@@ -203,11 +203,11 @@ describe('useCreatePageLayoutTab', () => {
 
     const { result } = renderHook(
       () => {
-        const setPageLayoutDraft = useSetRecoilComponentState(
+        const setPageLayoutDraft = useSetRecoilComponentStateV2(
           pageLayoutDraftComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         );
-        const pageLayoutDraft = useRecoilComponentValue(
+        const pageLayoutDraft = useRecoilComponentValueV2(
           pageLayoutDraftComponentState,
           PAGE_LAYOUT_TEST_INSTANCE_ID,
         );
@@ -228,6 +228,7 @@ describe('useCreatePageLayoutTab', () => {
         tabs: [
           {
             id: 'existing-tab',
+            applicationId: '',
             title: 'Existing Tab',
             position: 0,
             pageLayoutId: 'test-layout',

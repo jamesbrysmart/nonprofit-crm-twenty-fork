@@ -1,6 +1,6 @@
-import { createState } from 'twenty-ui/utilities';
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
 
-export const sseEventStreamIdState = createState<string | null>({
+export const sseEventStreamIdState = createStateV2<string | null>({
   key: 'sseEventStreamIdState',
   defaultValue: null,
 });

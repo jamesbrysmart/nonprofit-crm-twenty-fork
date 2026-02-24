@@ -2,11 +2,11 @@ import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
-import { useRecoilValue } from 'recoil';
 
 import { useGetToolIndex } from '@/ai/hooks/useGetToolIndex';
 import { usePersistLogicFunction } from '@/logic-functions/hooks/usePersistLogicFunction';
 import { logicFunctionsState } from '@/settings/logic-functions/states/logicFunctionsState';
+import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 import { SettingsTextInput } from '@/ui/input/components/SettingsTextInput';
 import { Table } from '@/ui/layout/table/components/Table';
@@ -54,13 +54,8 @@ const StyledFooterContainer = styled.div`
   margin-top: ${({ theme }) => theme.spacing(4)};
 `;
 
-const DEFAULT_TOOL_INPUT_SCHEMA = {
-  type: 'object',
-  properties: {},
-};
-
 export const SettingsToolsTable = () => {
-  const logicFunctions = useRecoilValue(logicFunctionsState);
+  const logicFunctions = useRecoilValueV2(logicFunctionsState);
   const { toolIndex, loading: toolIndexLoading } = useGetToolIndex();
   const { createLogicFunction } = usePersistLogicFunction();
 
@@ -126,29 +121,28 @@ export const SettingsToolsTable = () => {
         input: {
           name: 'new-tool',
           isTool: true,
-          toolInputSchema: DEFAULT_TOOL_INPUT_SCHEMA,
         },
       });
 
       if (result.status === 'successful' && isDefined(result.response?.data)) {
-        const newFunction = result.response.data.createDefaultLogicFunction;
+        const newLogicFunction = result.response.data.createOneLogicFunction;
         enqueueSuccessSnackBar({ message: t`Tool created` });
 
         // Navigate to the logic function detail page
         // The applicationId might be null for workspace-level functions
-        const applicationId = (newFunction as { applicationId?: string })
+        const applicationId = (newLogicFunction as { applicationId?: string })
           .applicationId;
         if (isDefined(applicationId)) {
           navigate(
             getSettingsPath(SettingsPath.ApplicationLogicFunctionDetail, {
               applicationId,
-              logicFunctionId: newFunction.id,
+              logicFunctionId: newLogicFunction.id,
             }),
           );
         } else {
           navigate(
             getSettingsPath(SettingsPath.LogicFunctionDetail, {
-              logicFunctionId: newFunction.id,
+              logicFunctionId: newLogicFunction.id,
             }),
           );
         }

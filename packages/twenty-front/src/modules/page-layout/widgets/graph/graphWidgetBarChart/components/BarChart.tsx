@@ -14,12 +14,12 @@ import {
   formatGraphValue,
   type GraphValueFormatOptions,
 } from '@/page-layout/widgets/graph/utils/graphFormatters';
-import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
+import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { type MouseEvent } from 'react';
 import { isDefined } from 'twenty-shared/utils';
-import { BarChartLayout } from '~/generated/graphql';
+import { BarChartLayout } from '~/generated-metadata/graphql';
 
 type BarChartProps = {
   data: BarChartDatum[];
@@ -77,7 +77,7 @@ export const BarChart = ({
   hasNoData = false,
 }: BarChartProps) => {
   const theme = useTheme();
-  const highlightedLegendId = useRecoilComponentValue(
+  const highlightedLegendId = useRecoilComponentValueV2(
     graphWidgetHighlightedLegendIdComponentState,
   );
 

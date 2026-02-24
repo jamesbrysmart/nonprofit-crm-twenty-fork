@@ -1,14 +1,15 @@
 import { useTheme } from '@emotion/react';
-import { useRecoilValue } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
 import { useIcons } from 'twenty-ui/display';
 
 import { CommandMenuItem } from '@/command-menu/components/CommandMenuItem';
 import { CommandMenuItemWithAddToNavigationDrag } from '@/command-menu/components/CommandMenuItemWithAddToNavigationDrag';
 import { IconWithBackground } from '@/navigation-menu-item/components/IconWithBackground';
+import { NavigationMenuItemType } from '@/navigation-menu-item/constants/NavigationMenuItemType';
 import { getNavigationMenuItemIconColors } from '@/navigation-menu-item/utils/getNavigationMenuItemIconColors';
 import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { SelectableListItem } from '@/ui/layout/selectable-list/components/SelectableListItem';
+import { useFamilySelectorValueV2 } from '@/ui/utilities/state/jotai/hooks/useFamilySelectorValueV2';
 import { coreIndexViewIdFromObjectMetadataItemFamilySelector } from '@/views/states/selectors/coreIndexViewIdFromObjectMetadataItemFamilySelector';
 
 type CommandMenuObjectMenuItemProps = {
@@ -30,10 +31,9 @@ export const CommandMenuObjectMenuItem = ({
   const theme = useTheme();
   const { getIcon } = useIcons();
   const iconColors = getNavigationMenuItemIconColors(theme);
-  const defaultViewId = useRecoilValue(
-    coreIndexViewIdFromObjectMetadataItemFamilySelector({
-      objectMetadataItemId: objectMetadataItem.id,
-    }),
+  const defaultViewId = useFamilySelectorValueV2(
+    coreIndexViewIdFromObjectMetadataItemFamilySelector,
+    { objectMetadataItemId: objectMetadataItem.id },
   );
   const Icon = getIcon(objectMetadataItem.icon);
   const isDisabled = !isDefined(defaultViewId);
@@ -55,7 +55,7 @@ export const CommandMenuObjectMenuItem = ({
           onClick={handleClick}
           dragIndex={dragIndex}
           payload={{
-            type: 'object' as const,
+            type: NavigationMenuItemType.OBJECT,
             objectMetadataId: objectMetadataItem.id,
             defaultViewId: defaultViewId ?? '',
             label: objectMetadataItem.labelPlural,

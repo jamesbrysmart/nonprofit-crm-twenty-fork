@@ -27,8 +27,9 @@ import { GenericDropdownContentWidth } from '@/ui/layout/dropdown/constants/Gene
 import { SelectableList } from '@/ui/layout/selectable-list/components/SelectableList';
 import { SelectableListItem } from '@/ui/layout/selectable-list/components/SelectableListItem';
 import { selectedItemIdComponentState } from '@/ui/layout/selectable-list/states/selectedItemIdComponentState';
-import { useRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentState';
-import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
+import { useRecoilComponentStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentStateV2';
+import { useRecoilComponentSelectorValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentSelectorValueV2';
+import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
 
 type SettingsRolePermissionsObjectLevelRecordLevelPermissionFieldSelectSubFieldMenuProps =
   {
@@ -41,19 +42,19 @@ export const SettingsRolePermissionsObjectLevelRecordLevelPermissionFieldSelectS
   }: SettingsRolePermissionsObjectLevelRecordLevelPermissionFieldSelectSubFieldMenuProps) => {
     const { getIcon } = useIcons();
 
-    const fieldMetadataItemUsedInDropdown = useRecoilComponentValue(
+    const fieldMetadataItemUsedInDropdown = useRecoilComponentSelectorValueV2(
       fieldMetadataItemUsedInDropdownComponentSelector,
     );
 
     const [, setObjectFilterDropdownIsSelectingCompositeField] =
-      useRecoilComponentState(
+      useRecoilComponentStateV2(
         objectFilterDropdownIsSelectingCompositeFieldComponentState,
       );
 
     const [
       objectFilterDropdownSubMenuFieldType,
       setObjectFilterDropdownSubMenuFieldType,
-    ] = useRecoilComponentState(
+    ] = useRecoilComponentStateV2(
       objectFilterDropdownSubMenuFieldTypeComponentState,
     );
 
@@ -88,7 +89,7 @@ export const SettingsRolePermissionsObjectLevelRecordLevelPermissionFieldSelectS
     const { advancedFilterFieldSelectDropdownId } =
       useAdvancedFilterFieldSelectDropdown(recordFilterId);
 
-    const selectedItemId = useRecoilComponentValue(
+    const selectedItemId = useRecoilComponentValueV2(
       selectedItemIdComponentState,
       advancedFilterFieldSelectDropdownId,
     );

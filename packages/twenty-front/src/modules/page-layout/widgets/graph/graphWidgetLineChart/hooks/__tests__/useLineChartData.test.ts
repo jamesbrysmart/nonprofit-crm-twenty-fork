@@ -3,15 +3,12 @@ import { type GraphColorRegistry } from '@/page-layout/widgets/graph/types/Graph
 import { renderHook } from '@testing-library/react';
 
 import { useLineChartData } from '@/page-layout/widgets/graph/graphWidgetLineChart/hooks/useLineChartData';
-import { type LineChartSeries } from '~/generated/graphql';
+import { type LineChartSeries } from '~/generated-metadata/graphql';
 
 const mockUseRecoilComponentValue = jest.fn();
-jest.mock(
-  '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue',
-  () => ({
-    useRecoilComponentValue: () => mockUseRecoilComponentValue(),
-  }),
-);
+jest.mock('@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2', () => ({
+  useRecoilComponentValueV2: () => mockUseRecoilComponentValue(),
+}));
 
 describe('useLineChartData', () => {
   beforeEach(() => {

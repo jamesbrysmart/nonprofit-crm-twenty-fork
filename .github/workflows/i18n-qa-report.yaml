@@ -19,7 +19,7 @@ jobs:
   qa_report:
     if: ${{ secrets.CROWDIN_PERSONAL_TOKEN != '' && (github.event_name != 'schedule' || github.repository == 'twentyhq/twenty') }}
     name: Generate QA Report
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

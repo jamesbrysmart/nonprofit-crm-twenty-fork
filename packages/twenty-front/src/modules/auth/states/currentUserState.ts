@@ -1,5 +1,5 @@
-import { createState } from 'twenty-ui/utilities';
-import { type User } from '~/generated/graphql';
+import { createStateV2 } from '@/ui/utilities/state/jotai/utils/createStateV2';
+import { type User } from '~/generated-metadata/graphql';
 
 export type CurrentUser = Pick<
   User,
@@ -15,7 +15,7 @@ export type CurrentUser = Pick<
   | 'hasPassword'
 >;
 
-export const currentUserState = createState<CurrentUser | null>({
+export const currentUserState = createStateV2<CurrentUser | null>({
   key: 'currentUserState',
   defaultValue: null,
 });

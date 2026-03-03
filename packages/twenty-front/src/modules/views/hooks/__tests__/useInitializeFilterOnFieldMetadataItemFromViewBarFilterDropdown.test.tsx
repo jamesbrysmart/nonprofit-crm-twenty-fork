@@ -1,7 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { act } from 'react';
 import { Provider as JotaiProvider } from 'jotai';
-import { RecoilRoot } from 'recoil';
 
 import { objectFilterDropdownFilterIsSelectedComponentState } from '@/object-record/object-filter-dropdown/states/objectFilterDropdownFilterIsSelectedComponentState';
 import { selectedOperandInDropdownComponentState } from '@/object-record/object-filter-dropdown/states/selectedOperandInDropdownComponentState';
@@ -20,13 +19,13 @@ import { currentRecordFiltersComponentState } from '@/object-record/record-filte
 import { type RecordFilter } from '@/object-record/record-filter/types/RecordFilter';
 import { getRecordFilterOperands } from '@/object-record/record-filter/utils/getRecordFilterOperands';
 import { FocusComponentType } from '@/ui/utilities/focus/types/FocusComponentType';
-import { useRecoilComponentSelectorValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentSelectorValueV2';
-import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
-import { useSetRecoilComponentStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilComponentStateV2';
+import { useAtomComponentSelectorValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentSelectorValue';
+import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateValue';
+import { useSetAtomComponentState } from '@/ui/utilities/state/jotai/hooks/useSetAtomComponentState';
 import { ViewBarFilterDropdownIds } from '@/views/constants/ViewBarFilterDropdownIds';
 import { getFilterTypeFromFieldType } from 'twenty-shared/utils';
-import { getMockPersonObjectMetadataItem } from '~/testing/mock-data/people';
 import { generatedMockObjectMetadataItems } from '~/testing/utils/generatedMockObjectMetadataItems';
+import { getMockObjectMetadataItemOrThrow } from '~/testing/utils/getMockObjectMetadataItemOrThrow';
 
 const mockPushFocusItemToFocusStack = jest.fn();
 
@@ -36,7 +35,7 @@ jest.mock('@/ui/utilities/focus/hooks/usePushFocusItemToFocusStack', () => ({
   }),
 }));
 
-const peopleObjectMetadataItemMock = getMockPersonObjectMetadataItem();
+const peopleObjectMetadataItemMock = getMockObjectMetadataItemOrThrow('person');
 const personCityFieldMetadataItemMock =
   peopleObjectMetadataItemMock.fields.find((field) => field.name === 'city');
 const personCompanyFieldMetadataItemMock =
@@ -53,17 +52,15 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
   );
   return (
     <JotaiProvider store={jotaiStore}>
-      <RecoilRoot>
-        <ObjectFilterDropdownComponentInstanceContext.Provider
+      <ObjectFilterDropdownComponentInstanceContext.Provider
+        value={{ instanceId: 'test' }}
+      >
+        <RecordFiltersComponentInstanceContext.Provider
           value={{ instanceId: 'test' }}
         >
-          <RecordFiltersComponentInstanceContext.Provider
-            value={{ instanceId: 'test' }}
-          >
-            {children}
-          </RecordFiltersComponentInstanceContext.Provider>
-        </ObjectFilterDropdownComponentInstanceContext.Provider>
-      </RecoilRoot>
+          {children}
+        </RecordFiltersComponentInstanceContext.Provider>
+      </ObjectFilterDropdownComponentInstanceContext.Provider>
     </JotaiProvider>
   );
 };
@@ -80,14 +77,13 @@ describe('useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown', () =
         const { initializeFilterOnFieldMetataItemFromViewBarFilterDropdown } =
           useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown();
 
-        const fieldMetadataItemUsedInDropdown =
-          useRecoilComponentSelectorValueV2(
-            fieldMetadataItemUsedInDropdownComponentSelector,
-          );
-        const objectFilterDropdownFilterIsSelected = useRecoilComponentValueV2(
+        const fieldMetadataItemUsedInDropdown = useAtomComponentSelectorValue(
+          fieldMetadataItemUsedInDropdownComponentSelector,
+        );
+        const objectFilterDropdownFilterIsSelected = useAtomComponentStateValue(
           objectFilterDropdownFilterIsSelectedComponentState,
         );
-        const selectedOperandInDropdown = useRecoilComponentValueV2(
+        const selectedOperandInDropdown = useAtomComponentStateValue(
           selectedOperandInDropdownComponentState,
         );
 
@@ -133,14 +129,13 @@ describe('useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown', () =
         const { initializeFilterOnFieldMetataItemFromViewBarFilterDropdown } =
           useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown();
 
-        const fieldMetadataItemUsedInDropdown =
-          useRecoilComponentSelectorValueV2(
-            fieldMetadataItemUsedInDropdownComponentSelector,
-          );
-        const objectFilterDropdownFilterIsSelected = useRecoilComponentValueV2(
+        const fieldMetadataItemUsedInDropdown = useAtomComponentSelectorValue(
+          fieldMetadataItemUsedInDropdownComponentSelector,
+        );
+        const objectFilterDropdownFilterIsSelected = useAtomComponentStateValue(
           objectFilterDropdownFilterIsSelectedComponentState,
         );
-        const selectedOperandInDropdown = useRecoilComponentValueV2(
+        const selectedOperandInDropdown = useAtomComponentStateValue(
           selectedOperandInDropdownComponentState,
         );
 
@@ -195,28 +190,27 @@ describe('useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown', () =
         const { initializeFilterOnFieldMetataItemFromViewBarFilterDropdown } =
           useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown();
 
-        const fieldMetadataItemUsedInDropdown =
-          useRecoilComponentSelectorValueV2(
-            fieldMetadataItemUsedInDropdownComponentSelector,
-          );
-        const objectFilterDropdownFilterIsSelected = useRecoilComponentValueV2(
+        const fieldMetadataItemUsedInDropdown = useAtomComponentSelectorValue(
+          fieldMetadataItemUsedInDropdownComponentSelector,
+        );
+        const objectFilterDropdownFilterIsSelected = useAtomComponentStateValue(
           objectFilterDropdownFilterIsSelectedComponentState,
         );
-        const selectedOperandInDropdown = useRecoilComponentValueV2(
+        const selectedOperandInDropdown = useAtomComponentStateValue(
           selectedOperandInDropdownComponentState,
         );
 
         const objectFilterDropdownCurrentRecordFilter =
-          useRecoilComponentValueV2(
+          useAtomComponentStateValue(
             objectFilterDropdownCurrentRecordFilterComponentState,
           );
 
-        const setCurrentRecordFilters = useSetRecoilComponentStateV2(
+        const setCurrentRecordFilters = useSetAtomComponentState(
           currentRecordFiltersComponentState,
           'test',
         );
 
-        const currentRecordFilters = useRecoilComponentValueV2(
+        const currentRecordFilters = useAtomComponentStateValue(
           currentRecordFiltersComponentState,
           'test',
         );
@@ -279,28 +273,27 @@ describe('useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown', () =
         const { initializeFilterOnFieldMetataItemFromViewBarFilterDropdown } =
           useInitializeFilterOnFieldMetadataItemFromViewBarFilterDropdown();
 
-        const fieldMetadataItemUsedInDropdown =
-          useRecoilComponentSelectorValueV2(
-            fieldMetadataItemUsedInDropdownComponentSelector,
-          );
-        const objectFilterDropdownFilterIsSelected = useRecoilComponentValueV2(
+        const fieldMetadataItemUsedInDropdown = useAtomComponentSelectorValue(
+          fieldMetadataItemUsedInDropdownComponentSelector,
+        );
+        const objectFilterDropdownFilterIsSelected = useAtomComponentStateValue(
           objectFilterDropdownFilterIsSelectedComponentState,
         );
-        const selectedOperandInDropdown = useRecoilComponentValueV2(
+        const selectedOperandInDropdown = useAtomComponentStateValue(
           selectedOperandInDropdownComponentState,
         );
 
         const objectFilterDropdownCurrentRecordFilter =
-          useRecoilComponentValueV2(
+          useAtomComponentStateValue(
             objectFilterDropdownCurrentRecordFilterComponentState,
           );
 
-        const setCurrentRecordFilters = useSetRecoilComponentStateV2(
+        const setCurrentRecordFilters = useSetAtomComponentState(
           currentRecordFiltersComponentState,
           'test',
         );
 
-        const currentRecordFilters = useRecoilComponentValueV2(
+        const currentRecordFilters = useAtomComponentStateValue(
           currentRecordFiltersComponentState,
           'test',
         );

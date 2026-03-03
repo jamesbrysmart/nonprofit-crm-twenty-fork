@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 
 import { type Attachment } from '@/activities/files/types/Attachment';
 import { useUpdatePageLayoutWidget } from '@/page-layout/hooks/useUpdatePageLayoutWidget';
@@ -16,7 +16,7 @@ import { parseInitialBlocknote } from '@/blocknote-editor/utils/parseInitialBloc
 import { usePushFocusItemToFocusStack } from '@/ui/utilities/focus/hooks/usePushFocusItemToFocusStack';
 import { useRemoveFocusItemFromFocusStackById } from '@/ui/utilities/focus/hooks/useRemoveFocusItemFromFocusStackById';
 import { FocusComponentType } from '@/ui/utilities/focus/types/FocusComponentType';
-import { useRecoilComponentStateCallbackStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentStateCallbackStateV2';
+import { useAtomComponentStateCallbackState } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateCallbackState';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
@@ -45,10 +45,10 @@ export const StandaloneRichTextEditorContent = ({
   const { pushFocusItemToFocusStack } = usePushFocusItemToFocusStack();
   const { removeFocusItemFromFocusStackById } =
     useRemoveFocusItemFromFocusStackById();
-  const isPageLayoutInEditModeState = useRecoilComponentStateCallbackStateV2(
+  const isPageLayoutInEditModeState = useAtomComponentStateCallbackState(
     isPageLayoutInEditModeComponentState,
   );
-  const pageLayoutEditingWidgetIdState = useRecoilComponentStateCallbackStateV2(
+  const pageLayoutEditingWidgetIdState = useAtomComponentStateCallbackState(
     pageLayoutEditingWidgetIdComponentState,
   );
 
@@ -68,16 +68,14 @@ export const StandaloneRichTextEditorContent = ({
     store,
   ]);
 
-  const initialContent = useMemo(
-    () => filterSupportedBlocks(parseInitialBlocknote(currentBody)),
-    [currentBody],
+  const [initialContent] = useState(() =>
+    filterSupportedBlocks(parseInitialBlocknote(currentBody)),
   );
 
   const editor = useCreateBlockNote({
     initialContent,
     domAttributes: { editor: { class: 'editor' } },
     schema: DASHBOARD_BLOCK_SCHEMA,
-    sideMenuDetection: 'editor',
     placeholders: {
       default: t`Enter text or type '/' for commands`,
     },
@@ -115,7 +113,7 @@ export const StandaloneRichTextEditorContent = ({
     handleAttachmentSync(newStringifiedBody, currentBody);
   };
 
-  const handleBlockEditorFocus = useCallback(() => {
+  const handleBlockEditorFocus = () => {
     pushFocusItemToFocusStack({
       component: {
         instanceId: widget.id,
@@ -124,14 +122,14 @@ export const StandaloneRichTextEditorContent = ({
       focusId: widget.id,
       globalHotkeysConfig: BLOCK_EDITOR_GLOBAL_HOTKEYS_CONFIG,
     });
-  }, [pushFocusItemToFocusStack, widget.id]);
+  };
 
-  const handleBlockEditorBlur = useCallback(() => {
+  const handleBlockEditorBlur = () => {
     handlePersistBody.flush();
     removeFocusItemFromFocusStackById({
       focusId: widget.id,
     });
-  }, [handlePersistBody, removeFocusItemFromFocusStackById, widget.id]);
+  };
 
   return (
     <>

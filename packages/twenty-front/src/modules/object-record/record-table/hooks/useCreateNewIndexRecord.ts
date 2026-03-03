@@ -10,16 +10,13 @@ import { recordIndexOpenRecordInState } from '@/object-record/record-index/state
 import { recordIndexRecordIdsByGroupComponentFamilyState } from '@/object-record/record-index/states/recordIndexRecordIdsByGroupComponentFamilyState';
 import { useUpsertRecordsInStore } from '@/object-record/record-store/hooks/useUpsertRecordsInStore';
 import { useBuildRecordInputFromFilters } from '@/object-record/record-table/hooks/useBuildRecordInputFromFilters';
-import { useRecordTitleCell } from '@/object-record/record-title-cell/hooks/useRecordTitleCell';
-import { RecordTitleCellContainerType } from '@/object-record/record-title-cell/types/RecordTitleCellContainerType';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { canOpenObjectInSidePanel } from '@/object-record/utils/canOpenObjectInSidePanel';
-import { getRecordFieldInputInstanceId } from '@/object-record/utils/getRecordFieldInputId';
-import { useRecoilComponentFamilyStateCallbackStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentFamilyStateCallbackStateV2';
-import { useRecoilComponentSelectorValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentSelectorValueV2';
-import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
-import { useStore } from 'jotai';
+import { useAtomComponentFamilyStateCallbackState } from '@/ui/utilities/state/jotai/hooks/useAtomComponentFamilyStateCallbackState';
+import { useAtomComponentSelectorValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentSelectorValue';
+import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateValue';
 import { ViewOpenRecordInType } from '@/views/types/ViewOpenRecordInType';
+import { useStore } from 'jotai';
 import { useCallback } from 'react';
 import { AppPath } from 'twenty-shared/types';
 import { findByProperty, isDefined } from 'twenty-shared/utils';
@@ -33,17 +30,17 @@ type UseCreateNewIndexRecordProps = {
 export const useCreateNewIndexRecord = ({
   objectMetadataItem,
 }: UseCreateNewIndexRecordProps) => {
-  const recordGroupDefinitions = useRecoilComponentSelectorValueV2(
+  const recordGroupDefinitions = useAtomComponentSelectorValue(
     recordGroupDefinitionsComponentSelector,
   );
 
   const store = useStore();
   const recordIndexRecordIdsByGroupCallbackState =
-    useRecoilComponentFamilyStateCallbackStateV2(
+    useAtomComponentFamilyStateCallbackState(
       recordIndexRecordIdsByGroupComponentFamilyState,
     );
 
-  const recordIndexGroupFieldMetadataItem = useRecoilComponentValueV2(
+  const recordIndexGroupFieldMetadataItem = useAtomComponentStateValue(
     recordIndexGroupFieldMetadataItemComponentState,
   );
 
@@ -59,8 +56,6 @@ export const useCreateNewIndexRecord = ({
   const { upsertRecordsInStore } = useUpsertRecordsInStore();
 
   const navigate = useNavigateApp();
-
-  const { openRecordTitleCell } = useRecordTitleCell();
 
   const { buildRecordInputFromFilters } = useBuildRecordInputFromFilters({
     objectMetadataItem,
@@ -101,21 +96,6 @@ export const useCreateNewIndexRecord = ({
           objectNameSingular: objectMetadataItem.nameSingular,
           isNewRecord: true,
         });
-
-        const labelIdentifierFieldMetadataItem =
-          getLabelIdentifierFieldMetadataItem(objectMetadataItem);
-
-        if (isDefined(labelIdentifierFieldMetadataItem)) {
-          openRecordTitleCell({
-            recordId,
-            fieldMetadataItemId: labelIdentifierFieldMetadataItem.id,
-            instanceId: getRecordFieldInputInstanceId({
-              recordId,
-              fieldName: labelIdentifierFieldMetadataItem.name,
-              prefix: RecordTitleCellContainerType.PageHeader,
-            }),
-          });
-        }
       } else {
         const labelIdentifierFieldMetadataItem =
           getLabelIdentifierFieldMetadataItem(objectMetadataItem);
@@ -181,7 +161,6 @@ export const useCreateNewIndexRecord = ({
       navigate,
       objectMetadataItem,
       openRecordInCommandMenu,
-      openRecordTitleCell,
       recordGroupDefinitions,
       recordIndexGroupFieldMetadataItem,
       recordIndexRecordIdsByGroupCallbackState,

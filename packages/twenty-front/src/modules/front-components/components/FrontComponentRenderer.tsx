@@ -4,12 +4,12 @@ import { useOnFrontComponentUpdated } from '@/front-components/hooks/useOnFrontC
 import { frontComponentApplicationTokenPairComponentState } from '@/front-components/states/frontComponentApplicationTokenPairComponentState';
 import { getFrontComponentUrl } from '@/front-components/utils/getFrontComponentUrl';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
-import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
-import { useTheme } from '@emotion/react';
+import { useSetAtomComponentState } from '@/ui/utilities/state/jotai/hooks/useSetAtomComponentState';
 import { t } from '@lingui/core/macro';
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
 import { FrontComponentRenderer as SharedFrontComponentRenderer } from 'twenty-sdk/front-component-renderer';
 import { isDefined } from 'twenty-shared/utils';
+import { ThemeContext } from 'twenty-ui/theme';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { useFindOneFrontComponentQuery } from '~/generated-metadata/graphql';
 
@@ -20,10 +20,10 @@ type FrontComponentRendererProps = {
 export const FrontComponentRenderer = ({
   frontComponentId,
 }: FrontComponentRendererProps) => {
-  const theme = useTheme();
+  const { theme } = useContext(ThemeContext);
   const { enqueueErrorSnackBar } = useSnackBar();
 
-  const setApplicationTokenPair = useSetRecoilComponentState(
+  const setFrontComponentApplicationTokenPair = useSetAtomComponentState(
     frontComponentApplicationTokenPairComponentState,
     frontComponentId,
   );
@@ -53,7 +53,7 @@ export const FrontComponentRenderer = ({
       const tokenPair = completedData.frontComponent?.applicationTokenPair;
 
       if (isDefined(tokenPair)) {
-        setApplicationTokenPair(tokenPair);
+        setFrontComponentApplicationTokenPair(tokenPair);
       }
     },
   });

@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
+import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { RecordTableContextProvider as RecordTableContextInternalProvider } from '@/object-record/record-table/contexts/RecordTableContext';
 
 import { useObjectPermissionsForObject } from '@/object-record/hooks/useObjectPermissionsForObject';
@@ -9,8 +10,8 @@ import { visibleRecordFieldsComponentSelector } from '@/object-record/record-fie
 import { recordIndexOpenRecordInState } from '@/object-record/record-index/states/recordIndexOpenRecordInState';
 import { RECORD_TABLE_CELL_INPUT_ID_PREFIX } from '@/object-record/record-table/constants/RecordTableCellInputIdPrefix';
 import { RECORD_TABLE_COLUMN_MIN_WIDTH } from '@/object-record/record-table/constants/RecordTableColumnMinWidth';
-import { useRecoilComponentSelectorValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentSelectorValueV2';
-import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
+import { useAtomComponentSelectorValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentSelectorValue';
+import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { ViewOpenRecordInType } from '@/views/types/ViewOpenRecordInType';
 
 type RecordTableContextProviderProps = {
@@ -32,16 +33,18 @@ export const RecordTableContextProvider = ({
     objectNameSingular,
   });
 
+  const { objectMetadataItems } = useObjectMetadataItems();
+
   const objectPermissions = useObjectPermissionsForObject(
     objectMetadataItem.id,
   );
 
-  const visibleRecordFields = useRecoilComponentSelectorValueV2(
+  const visibleRecordFields = useAtomComponentSelectorValue(
     visibleRecordFieldsComponentSelector,
     recordTableId,
   );
 
-  const recordIndexOpenRecordIn = useRecoilValueV2(
+  const recordIndexOpenRecordIn = useAtomStateValue(
     recordIndexOpenRecordInState,
   );
   const triggerEvent =
@@ -57,6 +60,7 @@ export const RecordTableContextProvider = ({
         value={{
           viewBarId,
           objectMetadataItem,
+          objectMetadataItems,
           recordTableId,
           objectNameSingular,
           objectPermissions,

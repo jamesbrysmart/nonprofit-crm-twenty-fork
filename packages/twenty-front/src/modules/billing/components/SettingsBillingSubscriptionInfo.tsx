@@ -27,9 +27,9 @@ import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 import { ConfirmationModal } from '@/ui/layout/modal/components/ConfirmationModal';
 import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { useSubscriptionStatus } from '@/workspace/hooks/useSubscriptionStatus';
-import styled from '@emotion/styled';
+import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
-import { useSetRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilStateV2';
+import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
 import { useMemo, useState } from 'react';
 import { isDefined } from 'twenty-shared/utils';
 import {
@@ -45,6 +45,7 @@ import {
 } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Section } from 'twenty-ui/layout';
+import { themeCssVariables } from 'twenty-ui/theme-constants';
 import {
   BillingPlanKey,
   BillingProductKey,
@@ -83,8 +84,8 @@ const CANCEL_SWITCH_METERED_PRICE_MODAL_ID =
 const StyledSwitchButtonContainer = styled.div`
   align-items: center;
   display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  margin-top: ${({ theme }) => theme.spacing(4)};
+  gap: ${themeCssVariables.spacing[2]};
+  margin-top: ${themeCssVariables.spacing[4]};
 `;
 
 export const SettingsBillingSubscriptionInfo = ({
@@ -144,7 +145,7 @@ export const SettingsBillingSubscriptionInfo = ({
 
   const [cancelSwitchMeteredPrice] = useCancelSwitchMeteredPriceMutation();
 
-  const setCurrentWorkspace = useSetRecoilStateV2(currentWorkspaceState);
+  const setCurrentWorkspace = useSetAtomState(currentWorkspaceState);
 
   const isTrialPeriod = subscriptionStatus === SubscriptionStatus.Trialing;
 

@@ -1,5 +1,5 @@
-import { useTheme } from '@emotion/react';
-import React from 'react';
+import React, { useContext } from 'react';
+import { ThemeContext } from 'twenty-ui/theme';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 import { SKELETON_LOADER_HEIGHT_SIZES } from '@/activities/components/SkeletonLoader';
@@ -7,8 +7,8 @@ import { SPREADSHEET_IMPORT_MODAL_ID } from '@/spreadsheet-import/constants/Spre
 import { spreadsheetImportDialogState } from '@/spreadsheet-import/states/spreadsheetImportDialogState';
 import { matchColumnsState } from '@/spreadsheet-import/steps/components/MatchColumnsStep/components/states/initialComputedColumnsState';
 import { useModal } from '@/ui/layout/modal/hooks/useModal';
-import { useRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilStateV2';
-import { useSetRecoilStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilStateV2';
+import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
+import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
 
 const SpreadsheetImport = React.lazy(() =>
   import('./SpreadsheetImport').then((module) => ({
@@ -17,7 +17,7 @@ const SpreadsheetImport = React.lazy(() =>
 );
 
 const LoadingSkeleton = () => {
-  const theme = useTheme();
+  const { theme } = useContext(ThemeContext);
 
   return (
     <SkeletonTheme
@@ -35,10 +35,11 @@ type SpreadsheetImportProviderProps = React.PropsWithChildren;
 export const SpreadsheetImportProvider = (
   props: SpreadsheetImportProviderProps,
 ) => {
-  const [spreadsheetImportDialog, setSpreadsheetImportDialog] =
-    useRecoilStateV2(spreadsheetImportDialogState);
+  const [spreadsheetImportDialog, setSpreadsheetImportDialog] = useAtomState(
+    spreadsheetImportDialogState,
+  );
 
-  const setMatchColumnsState = useSetRecoilStateV2(matchColumnsState);
+  const setMatchColumns = useSetAtomState(matchColumnsState);
 
   const { closeModal } = useModal();
 
@@ -52,7 +53,7 @@ export const SpreadsheetImportProvider = (
 
     closeModal(SPREADSHEET_IMPORT_MODAL_ID);
 
-    setMatchColumnsState([]);
+    setMatchColumns([]);
   };
 
   return (

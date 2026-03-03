@@ -2,6 +2,7 @@ import { ActionMenuComponentInstanceContext } from '@/action-menu/states/context
 import { getRightDrawerActionMenuDropdownIdFromActionMenuId } from '@/action-menu/utils/getRightDrawerActionMenuDropdownIdFromActionMenuId';
 import { SIDE_PANEL_FOCUS_ID } from '@/command-menu/constants/SidePanelFocusId';
 import { useCommandMenu } from '@/command-menu/hooks/useCommandMenu';
+import { commandMenuNavigationStackState } from '@/command-menu/states/commandMenuNavigationStackState';
 import { CommandMenuPageComponentInstanceContext } from '@/command-menu/states/contexts/CommandMenuPageComponentInstanceContext';
 import { MAIN_CONTEXT_STORE_INSTANCE_ID } from '@/context-store/constants/MainContextStoreInstanceId';
 import { contextStoreRecordShowParentViewComponentState } from '@/context-store/states/contextStoreRecordShowParentViewComponentState';
@@ -14,11 +15,11 @@ import { activeTabIdComponentState } from '@/ui/layout/tab-list/states/activeTab
 import { useHotkeysOnFocusedElement } from '@/ui/utilities/hotkey/hooks/useHotkeysOnFocusedElement';
 import { useAvailableComponentInstanceIdOrThrow } from '@/ui/utilities/state/component-state/hooks/useAvailableComponentInstanceIdOrThrow';
 import { useComponentInstanceStateContext } from '@/ui/utilities/state/component-state/hooks/useComponentInstanceStateContext';
-import { useRecoilComponentStateCallbackStateV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentStateCallbackStateV2';
-import { useRecoilComponentValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilComponentValueV2';
-import { useSetRecoilComponentStateV2 } from '@/ui/utilities/state/jotai/hooks/useSetRecoilComponentStateV2';
+import { useAtomComponentStateCallbackState } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateCallbackState';
+import { useAtomComponentStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateValue';
+import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
+import { useSetAtomComponentState } from '@/ui/utilities/state/jotai/hooks/useSetAtomComponentState';
 import { t } from '@lingui/core/macro';
-import { useFamilyRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useFamilyRecoilValueV2';
 import { useStore } from 'jotai';
 import { useCallback } from 'react';
 import { AppPath } from 'twenty-shared/types';
@@ -37,7 +38,7 @@ export const RecordShowRightDrawerOpenRecordButton = ({
   objectNameSingular,
   recordId,
 }: RecordShowRightDrawerOpenRecordButtonProps) => {
-  const record = useFamilyRecoilValueV2(recordStoreFamilyState, recordId) as
+  const record = useAtomFamilyStateValue(recordStoreFamilyState, recordId) as
     | ObjectRecord
     | null
     | undefined;
@@ -52,7 +53,7 @@ export const RecordShowRightDrawerOpenRecordButton = ({
     targetObjectId: recordId,
   });
 
-  const activeTabIdInRightDrawer = useRecoilComponentValueV2(
+  const activeTabId = useAtomComponentStateValue(
     activeTabIdComponentState,
     tabListComponentId,
   );
@@ -61,12 +62,12 @@ export const RecordShowRightDrawerOpenRecordButton = ({
     targetObjectId: recordId,
   });
 
-  const setActiveTabIdInRecordPage = useSetRecoilComponentStateV2(
+  const setActiveTabId = useSetAtomComponentState(
     activeTabIdComponentState,
     tabListComponentIdInRecordPage,
   );
 
-  const parentViewState = useRecoilComponentStateCallbackStateV2(
+  const parentViewState = useAtomComponentStateCallbackState(
     contextStoreRecordShowParentViewComponentState,
     MAIN_CONTEXT_STORE_INSTANCE_ID,
   );
@@ -83,20 +84,25 @@ export const RecordShowRightDrawerOpenRecordButton = ({
 
   const handleOpenRecord = useCallback(() => {
     const tabIdToOpen =
-      activeTabIdInRightDrawer === 'home'
+      activeTabId === 'home'
         ? objectNameSingular === CoreObjectNameSingular.Note ||
           objectNameSingular === CoreObjectNameSingular.Task
           ? 'richText'
           : 'timeline'
-        : activeTabIdInRightDrawer;
+        : activeTabId;
 
-    setActiveTabIdInRecordPage(tabIdToOpen);
+    setActiveTabId(tabIdToOpen);
 
     const parentView = store.get(parentViewState);
 
-    if (parentView?.parentViewObjectNameSingular !== objectNameSingular) {
+    if (
+      isDefined(parentView) &&
+      parentView.parentViewObjectNameSingular !== objectNameSingular
+    ) {
       store.set(parentViewState, undefined);
     }
+
+    store.set(commandMenuNavigationStackState.atom, []);
 
     navigate(AppPath.RecordShowPage, {
       objectNameSingular,
@@ -110,14 +116,14 @@ export const RecordShowRightDrawerOpenRecordButton = ({
     closeCommandMenu();
   }, [
     actionMenuId,
-    activeTabIdInRightDrawer,
+    activeTabId,
     closeCommandMenu,
     closeDropdown,
     navigate,
     objectNameSingular,
     parentViewState,
     recordId,
-    setActiveTabIdInRecordPage,
+    setActiveTabId,
     store,
   ]);
 

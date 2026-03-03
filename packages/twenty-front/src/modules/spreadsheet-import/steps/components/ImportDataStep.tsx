@@ -2,9 +2,10 @@ import { useNumberFormat } from '@/localization/hooks/useNumberFormat';
 import { StepNavigationButton } from '@/spreadsheet-import/components/StepNavigationButton';
 import { useSpreadsheetImportInternal } from '@/spreadsheet-import/hooks/useSpreadsheetImportInternal';
 import { spreadsheetImportCreatedRecordsProgressState } from '@/spreadsheet-import/states/spreadsheetImportCreatedRecordsProgressState';
-import { useRecoilValueV2 } from '@/ui/utilities/state/jotai/hooks/useRecoilValueV2';
+import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { Modal } from '@/ui/layout/modal/components/Modal';
-import styled from '@emotion/styled';
+import { styled } from '@linaria/react';
+import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { t } from '@lingui/core/macro';
 import { Loader } from 'twenty-ui/feedback';
 
@@ -16,17 +17,17 @@ const StyledContent = styled(Modal.Content)`
 `;
 
 const StyledHeader = styled.span`
-  color: ${({ theme }) => theme.font.color.primary};
-  font-size: ${({ theme }) => theme.font.size.md};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  margin-bottom: ${({ theme }) => theme.spacing(2)};
+  color: ${themeCssVariables.font.color.primary};
+  font-size: ${themeCssVariables.font.size.md};
+  font-weight: ${themeCssVariables.font.weight.medium};
+  margin-bottom: ${themeCssVariables.spacing[2]};
 `;
 
 const StyledDescription = styled.span`
-  color: ${({ theme }) => theme.font.color.tertiary};
-  font-size: ${({ theme }) => theme.font.size.md};
-  font-weight: ${({ theme }) => theme.font.weight.regular};
-  margin-bottom: ${({ theme }) => theme.spacing(5)};
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.md};
+  font-weight: ${themeCssVariables.font.weight.regular};
+  margin-bottom: ${themeCssVariables.spacing[5]};
 `;
 
 type ImportDataStepProps = {
@@ -37,7 +38,7 @@ export const ImportDataStep = ({
   recordsToImportCount,
 }: ImportDataStepProps) => {
   const { onClose } = useSpreadsheetImportInternal();
-  const spreadsheetImportCreatedRecordsProgress = useRecoilValueV2(
+  const spreadsheetImportCreatedRecordsProgress = useAtomStateValue(
     spreadsheetImportCreatedRecordsProgressState,
   );
   const { formatNumber } = useNumberFormat();
